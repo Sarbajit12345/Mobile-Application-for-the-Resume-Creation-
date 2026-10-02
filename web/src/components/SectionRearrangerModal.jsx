@@ -12,6 +12,8 @@ export default function SectionRearrangerModal({
   customSections = [],
   onApplyPreset
 }) {
+  const [draggedIndex, setDraggedIndex] = useState(null);
+
   if (!isOpen) return null;
 
   // Standard core sections + custom sections
@@ -37,6 +39,28 @@ export default function SectionRearrangerModal({
   const activeOrder = sectionOrder && sectionOrder.length > 0
     ? sectionOrder
     : defaultSections.map(s => ({ ...s, visible: true }));
+
+  // HTML5 Drag and Drop handlers
+  const handleDragStart = (e, index) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e, targetIndex) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === targetIndex) return;
+    const newOrder = [...activeOrder];
+    const draggedItem = newOrder[draggedIndex];
+    newOrder.splice(draggedIndex, 1);
+    newOrder.splice(targetIndex, 0, draggedItem);
+    onUpdateSectionOrder(newOrder);
+    setDraggedIndex(null);
+  };
 
   const handleMoveUp = (index) => {
     if (index === 0) return;
@@ -146,7 +170,7 @@ export default function SectionRearrangerModal({
               <Layers size={22} style={{ color: '#818cf8' }} /> Section Order & Rearrange Manager
             </h2>
             <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.2rem' }}>
-              Drag, move top/bottom, or re-order headings. All changes auto-adjust the live resume layout & PDF download.
+              Click & drag any heading card up/down, or click Top/Up/Down/Bottom. All changes auto-adjust your resume layout & PDF download.
             </p>
           </div>
 
@@ -193,7 +217,7 @@ export default function SectionRearrangerModal({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
             <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#38bdf8', letterSpacing: '0.05em' }}>
-              CUSTOM REARRANGE HEADINGS ({activeOrder.length} SECTIONS)
+              DRAG & DROP REARRANGE HEADINGS ({activeOrder.length} SECTIONS)
             </span>
 
             <button
@@ -205,20 +229,26 @@ export default function SectionRearrangerModal({
 
           {activeOrder.map((sec, idx) => {
             const isVisible = sec.visible !== false;
+            const isDragging = draggedIndex === idx;
             return (
               <div
                 key={sec.id || idx}
+                draggable={true}
+                onDragStart={(e) => handleDragStart(e, idx)}
+                onDragOver={(e) => handleDragOver(e, idx)}
+                onDrop={(e) => handleDrop(e, idx)}
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  background: isVisible ? '#1e293b' : 'rgba(15, 23, 42, 0.6)',
-                  border: isVisible ? '1px solid rgba(255, 255, 255, 0.12)' : '1px dashed rgba(255, 255, 255, 0.06)',
-                  borderRadius: '10px', padding: '0.75rem 1rem', opacity: isVisible ? 1 : 0.55
+                  background: isDragging ? 'rgba(99, 102, 241, 0.3)' : (isVisible ? '#1e293b' : 'rgba(15, 23, 42, 0.6)'),
+                  border: isDragging ? '2px dashed #6366f1' : (isVisible ? '1px solid rgba(255, 255, 255, 0.12)' : '1px dashed rgba(255, 255, 255, 0.06)'),
+                  borderRadius: '10px', padding: '0.75rem 1rem', opacity: isVisible ? 1 : 0.55,
+                  cursor: 'grab', transition: 'transform 0.15s ease, background 0.15s ease'
                 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <span style={{ color: '#64748b', cursor: 'grab' }}>
-                    <GripVertical size={16} />
+                  <span style={{ color: '#818cf8', display: 'flex', alignItems: 'center' }}>
+                    <GripVertical size={18} />
                   </span>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#818cf8', width: '22px' }}>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#818cf8', width: '24px' }}>
                     #{idx + 1}
                   </span>
                   <span style={{ fontSize: '0.9rem', fontWeight: 700, color: isVisible ? 'white' : '#94a3b8' }}>

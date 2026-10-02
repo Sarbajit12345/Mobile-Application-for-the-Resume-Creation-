@@ -306,6 +306,7 @@ export default function App() {
                   currentUser={currentUser}
                   onNavigate={setCurrentView}
                   onEditResume={() => setCurrentView('editor')}
+                  onOpenRearranger={() => setIsRearrangerOpen(true)}
                 />
               )}
 
@@ -322,7 +323,11 @@ export default function App() {
               )}
 
               {currentView === 'templates' && (
-                <TemplateGalleryView currentTemplate={templateId} onSelectTemplate={id => { setTemplateId(id); setCurrentView('editor'); }} />
+                <TemplateGalleryView
+                  currentTemplate={templateId}
+                  onSelectTemplate={id => setTemplateId(id)}
+                  onNavigateEditor={() => setCurrentView('editor')}
+                />
               )}
 
               {/* CLEAN, ELEGANT, UNCLUTTERED RESUME EDITOR VIEW */}
