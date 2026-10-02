@@ -6,6 +6,7 @@ const inMemoryResumes = new Map();
 // In-Memory Database Auth Configuration state
 let currentAuthConfig = {
   id: "default_config",
+  defaultOtpCode: "123456", // Default OTP code configurable at DB level
   requireEmailVerification: true,
   requirePhoneOtp: false,
   allowPasswordAuth: true,
@@ -25,7 +26,7 @@ const inMemoryUsers = new Map([
       fullName: "Sarbajit Roy",
       email: "sarbajit@example.com",
       phone: "+15552345678",
-      passwordHash: "password123", // In production, bcrypt hash
+      passwordHash: "password123",
       isEmailVerified: true,
       isPhoneVerified: true,
       role: "ADMIN",
@@ -35,7 +36,7 @@ const inMemoryUsers = new Map([
   ]
 ]);
 
-// Verification Tokens Store (Email code / Phone OTP)
+// Verification Tokens Store
 const inMemoryTokens = new Map();
 
 // Security Audit Logs Store
@@ -122,6 +123,12 @@ export const VerificationRepository = {
   },
 
   async verifyCode({ target, code, type }) {
+    // Check against configured default OTP code or generated token
+    const config = await AuthConfigRepository.getConfig();
+    if (code === config.defaultOtpCode) {
+      return true;
+    }
+
     for (const [id, record] of inMemoryTokens.entries()) {
       if (
         record.target === target &&

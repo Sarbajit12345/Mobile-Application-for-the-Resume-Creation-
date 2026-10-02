@@ -32,30 +32,26 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ success: false, message: "Full Name, Email, and Phone Number are required." });
     }
 
-    // Check if user exists
     const existing = await UserRepository.findByEmailOrPhone(email) || await UserRepository.findByEmailOrPhone(phone);
     if (existing) {
       return res.status(400).json({ success: false, message: "A user with this Email or Phone Number already exists." });
     }
 
-    // Create user
     const newUser = await UserRepository.create({ fullName, email, phone, password });
+    const config = await AuthConfigRepository.getConfig();
+    const defaultOtp = config.defaultOtpCode || "123456";
 
-    // Generate 6-digit email/phone verification code
-    const emailCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const phoneCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-    await VerificationRepository.createToken({ target: email, code: emailCode, type: "EMAIL_VERIFY" });
-    await VerificationRepository.createToken({ target: phone, code: phoneCode, type: "PHONE_OTP" });
+    await VerificationRepository.createToken({ target: email, code: defaultOtp, type: "EMAIL_VERIFY" });
+    await VerificationRepository.createToken({ target: phone, code: defaultOtp, type: "PHONE_OTP" });
     await SecurityLogRepository.log(newUser.id, "USER_REGISTERED");
 
     res.status(201).json({
       success: true,
-      message: "Registration successful. Please verify your email and phone with the OTP codes sent.",
+      message: `Registration successful. Default verification OTP code is set to ${defaultOtp}.`,
       userId: newUser.id,
       mockCodesForDemo: {
-        emailCode,
-        phoneCode
+        emailCode: defaultOtp,
+        phoneCode: defaultOtp
       }
     });
   } catch (error) {
@@ -66,14 +62,13 @@ router.post("/register", async (req, res) => {
 // Step 2: Verify Registration Email / Phone Code
 router.post("/verify-code", async (req, res) => {
   try {
-    const { target, code, type } = req.body; // type: EMAIL_VERIFY or PHONE_OTP
+    const { target, code, type } = req.body;
     const isValid = await VerificationRepository.verifyCode({ target, code, type });
 
     if (!isValid) {
-      return res.status(400).json({ success: false, message: "Invalid or expired 6-digit verification code." });
+      return res.status(400).json({ success: false, message: "Invalid or expired verification code." });
     }
 
-    // Mark user verified
     const user = await UserRepository.findByEmailOrPhone(target);
     if (user) {
       if (type === "EMAIL_VERIFY") await UserRepository.update(user.id, { isEmailVerified: true });
@@ -117,7 +112,8 @@ router.post("/send-otp", async (req, res) => {
       return res.status(404).json({ success: false, message: "No account found matching this Phone or Email." });
     }
 
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const config = await AuthConfigRepository.getConfig();
+    const otpCode = config.defaultOtpCode || "123456";
     await VerificationRepository.createToken({ target: identifier, code: otpCode, type: "PHONE_OTP" });
 
     res.json({
