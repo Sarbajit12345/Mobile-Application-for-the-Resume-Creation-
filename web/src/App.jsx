@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Sparkles, Download, Plus, Trash2, User, LogIn, UserPlus, Settings, BarChart2, Layout, LogOut, AlignLeft, AlignCenter, AlignRight, Type, List, PlusCircle } from 'lucide-react';
+import {
+  FileText, Sparkles, Download, Plus, Trash2, User, LogIn, UserPlus,
+  Settings, BarChart2, Layout, LogOut, AlignLeft, AlignCenter, AlignRight,
+  Type, List, PlusCircle, Eye, CheckCircle2, Briefcase, Award, GraduationCap,
+  Wrench, FolderPlus, HelpCircle
+} from 'lucide-react';
 import ResumePreview from './components/ResumePreview';
 import AIAssistantModal from './components/AIAssistantModal';
 import AuthModal from './components/AuthModal';
@@ -12,8 +17,10 @@ import TemplateGalleryView from './components/TemplateGalleryView';
 import DashboardOverview from './components/DashboardOverview';
 import Sidebar from './components/Sidebar';
 import AddHeadingModal from './components/AddHeadingModal';
+import WordToolbar from './components/WordToolbar';
+import PreviewModal from './components/PreviewModal';
 
-// Complete default data state matching the Sarbajit Behera target resume layout
+// Initial default state matching Sarbajit Behera target resume layout
 const initialResumeData = {
   personalDetails: {
     fullName: 'SARBAJIT BEHERA',
@@ -118,7 +125,7 @@ Currently leading ERP initiatives as a Product Manager, owning product roadmap, 
 export default function App() {
   const [resumeData, setResumeData] = useState(initialResumeData);
   const [currentView, setCurrentView] = useState('dashboard');
-  const [activeTab, setActiveTab] = useState('personal'); // 'personal', 'expertise', 'experience', 'projects', 'achievements', or custom section ID
+  const [activeTab, setActiveTab] = useState('personal');
   const [templateId, setTemplateId] = useState('executive-split');
   
   // Auth & Modal States
@@ -127,10 +134,12 @@ export default function App() {
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [isAddHeadingOpen, setIsAddHeadingOpen] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [dbConfig, setDbConfig] = useState(null);
 
   // New item inputs
   const [newExpertise, setNewExpertise] = useState('');
+  const [newTool, setNewTool] = useState('');
 
   useEffect(() => {
     fetch('http://localhost:5050/api/auth/config')
@@ -156,6 +165,16 @@ export default function App() {
     setResumeData(prev => ({ ...prev, expertise: prev.expertise.filter((_, i) => i !== idx) }));
   };
 
+  const handleAddTool = () => {
+    if (!newTool.trim()) return;
+    setResumeData(prev => ({ ...prev, toolsAndTech: [...prev.toolsAndTech, newTool.trim()] }));
+    setNewTool('');
+  };
+
+  const handleRemoveTool = (idx) => {
+    setResumeData(prev => ({ ...prev, toolsAndTech: prev.toolsAndTech.filter((_, i) => i !== idx) }));
+  };
+
   const handleAddCustomSection = (newSection) => {
     setResumeData(prev => ({
       ...prev,
@@ -177,6 +196,33 @@ export default function App() {
       ...prev,
       customSections: prev.customSections.map(s => s.id === secId ? { ...s, [field]: val } : s)
     }));
+  };
+
+  // MS Word formatting engine logic
+  const handleWordFormatting = (currentVal, setter, actionType, param) => {
+    let newVal = currentVal || '';
+    if (actionType === 'bold') {
+      newVal = newVal ? `${newVal} **bold text**` : '**bold text**';
+    } else if (actionType === 'italic') {
+      newVal = newVal ? `${newVal} *italic text*` : '*italic text*';
+    } else if (actionType === 'underline') {
+      newVal = newVal ? `${newVal} <u>underlined text</u>` : '<u>underlined text</u>';
+    } else if (actionType === 'strikethrough') {
+      newVal = newVal ? `${newVal} ~~strikethrough~~` : '~~strikethrough~~';
+    } else if (actionType === 'bullet') {
+      const lines = newVal.split('\n');
+      newVal = lines.map(l => l.trim().startsWith('• ') ? l : `• ${l.trim()}`).join('\n');
+    } else if (actionType === 'number') {
+      const lines = newVal.split('\n');
+      newVal = lines.map((l, i) => `${i + 1}. ${l.replace(/^(\d+\.|\•)\s*/, '')}`).join('\n');
+    } else if (actionType === 'case') {
+      if (param === 'uppercase') newVal = newVal.toUpperCase();
+      if (param === 'lowercase') newVal = newVal.toLowerCase();
+      if (param === 'titlecase') newVal = newVal.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+    } else if (actionType === 'insert-verb') {
+      newVal = newVal ? `${newVal} ${param}` : param;
+    }
+    setter(newVal);
   };
 
   return (
@@ -216,20 +262,28 @@ export default function App() {
           />
 
           {/* Right Main Content Area */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, background: '#0b0f19' }}>
             {/* Top Bar for Authenticated User */}
             <div style={{
               height: '64px', borderBottom: '1px solid rgba(255,255,255,0.08)',
-              background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(12px)',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: '0 2rem', position: 'sticky', top: 0, zIndex: 90
+              background: '#0f172a', display: 'flex', justifyContent: 'space-between',
+              alignItems: 'center', padding: '0 2rem', position: 'sticky', top: 0, zIndex: 90
             }}>
-              <div style={{ fontSize: '1rem', fontWeight: 700, color: 'white', textTransform: 'capitalize' }}>
-                {currentView.replace('-', ' ')}
+              <div style={{ fontSize: '1rem', fontWeight: 800, color: 'white', textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ color: '#818cf8' }}>●</span> {currentView.replace('-', ' ')}
               </div>
 
               <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                <button className="btn btn-ai" onClick={() => setIsAIModalOpen(true)} style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem' }}>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setIsPreviewModalOpen(true)}
+                  style={{ padding: '0.45rem 1rem', fontSize: '0.85rem', boxShadow: '0 4px 14px rgba(99, 102, 241, 0.4)' }}>
+                  <Eye size={16} /> Live Preview Resume
+                </button>
+                <button
+                  className="btn btn-ai"
+                  onClick={() => setIsAIModalOpen(true)}
+                  style={{ padding: '0.45rem 1rem', fontSize: '0.85rem' }}>
                   <Sparkles size={16} /> AI Prompt Studio
                 </button>
               </div>
@@ -261,340 +315,554 @@ export default function App() {
                 <TemplateGalleryView currentTemplate={templateId} onSelectTemplate={id => { setTemplateId(id); setCurrentView('editor'); }} />
               )}
 
+              {/* CLEAN, ELEGANT, UNCLUTTERED RESUME EDITOR VIEW */}
               {currentView === 'editor' && (
-                <main className="main-workspace" style={{ padding: '1.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                <main style={{ padding: '2rem 1.5rem', maxWidth: '1100px', margin: '0 auto', width: '100%' }}>
                   
-                  {/* Editor Panel with Vertical Left Tabs Layout */}
-                  <section className="editor-panel" style={{ display: 'flex', flexDirection: 'row', padding: 0, overflow: 'hidden' }}>
-                    
-                    {/* Vertical Left Tabs Stack */}
-                    <div style={{
-                      width: '210px', background: '#0f172a', borderRight: '1px solid rgba(255,255,255,0.08)',
-                      padding: '1rem 0.6rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', flexShrink: 0
-                    }}>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.3rem' }}>
-                        SECTION TABS
-                      </span>
+                  {/* Editor Header Bar */}
+                  <div style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    marginBottom: '1.5rem', background: '#151d30', border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '12px', padding: '1.25rem 1.5rem', boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
+                  }}>
+                    <div>
+                      <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        Executive Resume Form Editor
+                        <span style={{ fontSize: '0.75rem', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '0.2rem 0.6rem', borderRadius: '12px', fontWeight: 700 }}>
+                          MS Word Rich Toolbar
+                        </span>
+                      </h2>
+                      <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.2rem' }}>
+                        Fill in your resume sections below. Click "Live Preview Resume" anytime to view the crisp A4 print layout.
+                      </p>
+                    </div>
 
-                      <button
-                        onClick={() => setActiveTab('personal')}
-                        className={`tab-btn ${activeTab === 'personal' ? 'active' : ''}`}
-                        style={{ textAlign: 'left', width: '100%', borderRadius: '8px', padding: '0.65rem 0.8rem', fontSize: '0.85rem' }}>
-                        Header & Contact
-                      </button>
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => setIsPreviewModalOpen(true)}
+                      style={{ padding: '0.65rem 1.25rem', fontSize: '0.9rem' }}>
+                      <Eye size={18} /> Preview Document
+                    </button>
+                  </div>
 
-                      <button
-                        onClick={() => setActiveTab('expertise')}
-                        className={`tab-btn ${activeTab === 'expertise' ? 'active' : ''}`}
-                        style={{ textAlign: 'left', width: '100%', borderRadius: '8px', padding: '0.65rem 0.8rem', fontSize: '0.85rem' }}>
-                        Expertise & Skills
-                      </button>
+                  {/* Clean Horizontal Section Navigator Tabs */}
+                  <div style={{
+                    display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem',
+                    marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)'
+                  }}>
+                    {[
+                      { id: 'personal', label: '1. Header & Contact', icon: User },
+                      { id: 'expertise', label: '2. Expertise & Tech', icon: Wrench },
+                      { id: 'experience', label: '3. Work Experience', icon: Briefcase },
+                      { id: 'projects', label: '4. Projects', icon: FolderPlus },
+                      { id: 'achievements', label: '5. Key Achievements', icon: Award }
+                    ].map(tab => {
+                      const IconComp = tab.icon;
+                      const isActive = activeTab === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id)}
+                          style={{
+                            background: isActive ? 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)' : '#151d30',
+                            border: isActive ? 'none' : '1px solid rgba(255,255,255,0.08)',
+                            color: isActive ? 'white' : '#94a3b8',
+                            padding: '0.65rem 1rem', borderRadius: '8px', fontSize: '0.85rem',
+                            fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center',
+                            gap: '0.45rem', whiteSpace: 'nowrap', transition: 'all 0.2s ease'
+                          }}>
+                          <IconComp size={15} />
+                          {tab.label}
+                        </button>
+                      );
+                    })}
 
-                      <button
-                        onClick={() => setActiveTab('experience')}
-                        className={`tab-btn ${activeTab === 'experience' ? 'active' : ''}`}
-                        style={{ textAlign: 'left', width: '100%', borderRadius: '8px', padding: '0.65rem 0.8rem', fontSize: '0.85rem' }}>
-                        Professional Exp
-                      </button>
-
-                      <button
-                        onClick={() => setActiveTab('projects')}
-                        className={`tab-btn ${activeTab === 'projects' ? 'active' : ''}`}
-                        style={{ textAlign: 'left', width: '100%', borderRadius: '8px', padding: '0.65rem 0.8rem', fontSize: '0.85rem' }}>
-                        Projects
-                      </button>
-
-                      <button
-                        onClick={() => setActiveTab('achievements')}
-                        className={`tab-btn ${activeTab === 'achievements' ? 'active' : ''}`}
-                        style={{ textAlign: 'left', width: '100%', borderRadius: '8px', padding: '0.65rem 0.8rem', fontSize: '0.85rem' }}>
-                        Key Achievements
-                      </button>
-
-                      {/* Custom Section Tabs added by user */}
-                      {resumeData.customSections?.map(sec => (
+                    {/* Custom User Headings Tabs */}
+                    {resumeData.customSections?.map(sec => {
+                      const isActive = activeTab === sec.id;
+                      return (
                         <button
                           key={sec.id}
                           onClick={() => setActiveTab(sec.id)}
-                          className={`tab-btn ${activeTab === sec.id ? 'active' : ''}`}
-                          style={{ textAlign: 'left', width: '100%', borderRadius: '8px', padding: '0.65rem 0.8rem', fontSize: '0.85rem', color: '#c084fc' }}>
+                          style={{
+                            background: isActive ? '#8b5cf6' : '#151d30',
+                            border: isActive ? 'none' : '1px solid rgba(139, 92, 246, 0.3)',
+                            color: isActive ? 'white' : '#c084fc',
+                            padding: '0.65rem 1rem', borderRadius: '8px', fontSize: '0.85rem',
+                            fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center',
+                            gap: '0.4rem', whiteSpace: 'nowrap'
+                          }}>
                           ✨ {sec.heading}
                         </button>
-                      ))}
+                      );
+                    })}
 
-                      {/* Button to add custom heading */}
-                      <button
-                        onClick={() => setIsAddHeadingOpen(true)}
-                        style={{
-                          marginTop: 'auto', background: 'rgba(99, 102, 241, 0.15)', border: '1px dashed #6366f1',
-                          color: '#818cf8', borderRadius: '8px', padding: '0.65rem', fontSize: '0.8rem',
-                          fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem'
-                        }}>
-                        <PlusCircle size={14} /> Add Heading
-                      </button>
-                    </div>
+                    {/* Add Custom Heading Button */}
+                    <button
+                      onClick={() => setIsAddHeadingOpen(true)}
+                      style={{
+                        background: 'rgba(99, 102, 241, 0.12)', border: '1px dashed #6366f1',
+                        color: '#818cf8', borderRadius: '8px', padding: '0.65rem 1rem', fontSize: '0.85rem',
+                        fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center',
+                        gap: '0.4rem', whiteSpace: 'nowrap'
+                      }}>
+                      <PlusCircle size={15} /> + Add Heading
+                    </button>
+                  </div>
 
-                    {/* Active Tab Form Container */}
-                    <div style={{ flex: 1, padding: '1.5rem', overflowY: 'auto' }}>
-                      
-                      {/* Section 1: Header & Contact Info */}
-                      {activeTab === 'personal' && (
-                        <div>
-                          {/* Styling & Alignment Bar */}
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', background: '#0f172a', padding: '0.6rem 1rem', borderRadius: '8px' }}>
-                            <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>Header Alignment:</span>
-                            <div style={{ display: 'flex', gap: '0.25rem' }}>
-                              <button onClick={() => handlePersonalChange('alignment', 'left')} style={{ padding: '0.35rem', background: resumeData.personalDetails.alignment === 'left' ? '#6366f1' : 'transparent', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                                <AlignLeft size={14} />
-                              </button>
-                              <button onClick={() => handlePersonalChange('alignment', 'center')} style={{ padding: '0.35rem', background: resumeData.personalDetails.alignment === 'center' ? '#6366f1' : 'transparent', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                                <AlignCenter size={14} />
-                              </button>
-                              <button onClick={() => handlePersonalChange('alignment', 'right')} style={{ padding: '0.35rem', background: resumeData.personalDetails.alignment === 'right' ? '#6366f1' : 'transparent', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                                <AlignRight size={14} />
-                              </button>
-                            </div>
-                          </div>
+                  {/* ACTIVE FORM SECTION CONTENT CONTAINER */}
+                  <div style={{
+                    background: '#151d30', border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '12px', padding: '2rem', boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
+                  }}>
+                    
+                    {/* SECTION 1: HEADER & CONTACT INFO */}
+                    {activeTab === 'personal' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                        <div style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem', marginBottom: '0.5rem' }}>
+                          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'white' }}>Header & Personal Details</h3>
+                          <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Provide your full name, target title, contact info, and executive summary.</p>
+                        </div>
 
-                          <div className="form-grid">
-                            <div className="form-group">
-                              <label>Full Name</label>
-                              <input value={resumeData.personalDetails.fullName} onChange={(e) => handlePersonalChange('fullName', e.target.value)} />
-                            </div>
-                            <div className="form-group">
-                              <label>Designation / Subtitle</label>
-                              <input value={resumeData.personalDetails.designation} onChange={(e) => handlePersonalChange('designation', e.target.value)} />
-                            </div>
-                          </div>
-                          <div className="form-grid">
-                            <div className="form-group">
-                              <label>Email</label>
-                              <input value={resumeData.personalDetails.email} onChange={(e) => handlePersonalChange('email', e.target.value)} />
-                            </div>
-                            <div className="form-group">
-                              <label>Phone Numbers</label>
-                              <input value={resumeData.personalDetails.phone} onChange={(e) => handlePersonalChange('phone', e.target.value)} />
-                            </div>
-                          </div>
-                          <div className="form-grid">
-                            <div className="form-group">
-                              <label>Location</label>
-                              <input value={resumeData.personalDetails.location} onChange={(e) => handlePersonalChange('location', e.target.value)} />
-                            </div>
-                            <div className="form-group">
-                              <label>LinkedIn URL</label>
-                              <input value={resumeData.personalDetails.linkedin} onChange={(e) => handlePersonalChange('linkedin', e.target.value)} />
-                            </div>
+                        <div className="form-grid">
+                          <div className="form-group">
+                            <label>Full Name</label>
+                            <input
+                              value={resumeData.personalDetails.fullName}
+                              onChange={(e) => handlePersonalChange('fullName', e.target.value)}
+                              placeholder="e.g. SARBAJIT BEHERA"
+                            />
                           </div>
                           <div className="form-group">
-                            <label>Executive Summary</label>
-                            <textarea rows={6} value={resumeData.personalDetails.summary} onChange={(e) => handlePersonalChange('summary', e.target.value)} />
+                            <label>Target Title / Subtitle</label>
+                            <input
+                              value={resumeData.personalDetails.designation}
+                              onChange={(e) => handlePersonalChange('designation', e.target.value)}
+                              placeholder="e.g. Product Manager | ERP Specialist"
+                            />
                           </div>
                         </div>
-                      )}
 
-                      {/* Section 2: Expertise & Skills */}
-                      {activeTab === 'expertise' && (
+                        <div className="form-grid">
+                          <div className="form-group">
+                            <label>Email Address</label>
+                            <input
+                              value={resumeData.personalDetails.email}
+                              onChange={(e) => handlePersonalChange('email', e.target.value)}
+                              placeholder="e.g. sarbajitbehera67@gmail.com"
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label>Phone Numbers</label>
+                            <input
+                              value={resumeData.personalDetails.phone}
+                              onChange={(e) => handlePersonalChange('phone', e.target.value)}
+                              placeholder="e.g. 7008706674, 8908930068"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="form-grid">
+                          <div className="form-group">
+                            <label>Location</label>
+                            <input
+                              value={resumeData.personalDetails.location}
+                              onChange={(e) => handlePersonalChange('location', e.target.value)}
+                              placeholder="e.g. Bengaluru, Karnataka, India"
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label>LinkedIn Profile URL</label>
+                            <input
+                              value={resumeData.personalDetails.linkedin}
+                              onChange={(e) => handlePersonalChange('linkedin', e.target.value)}
+                              placeholder="e.g. https://www.linkedin.com/in/sarbajit-behera"
+                            />
+                          </div>
+                        </div>
+
+                        {/* EXECUTIVE SUMMARY WITH MS WORD TOOLBAR */}
+                        <div className="form-group" style={{ marginTop: '0.5rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                            <label>Executive Summary</label>
+                            <span style={{ fontSize: '0.75rem', color: '#38bdf8', fontWeight: 600 }}>
+                              MS Word Toolbar Attached
+                            </span>
+                          </div>
+
+                          <WordToolbar
+                            fieldName="summary"
+                            onAction={(act, val) => handleWordFormatting(
+                              resumeData.personalDetails.summary,
+                              (newText) => handlePersonalChange('summary', newText),
+                              act, val
+                            )}
+                            onAiPolish={() => setIsAIModalOpen(true)}
+                          />
+
+                          <textarea
+                            rows={7}
+                            style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0, fontSize: '0.9rem', lineHeight: 1.6 }}
+                            value={resumeData.personalDetails.summary}
+                            onChange={(e) => handlePersonalChange('summary', e.target.value)}
+                            placeholder="Write your professional summary here..."
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* SECTION 2: EXPERTISE & TECH STACK */}
+                    {activeTab === 'expertise' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        <div style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem' }}>
+                          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'white' }}>Expertise & Technical Stack</h3>
+                          <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Manage core expertise badges, tools, and technical domain exposures.</p>
+                        </div>
+
+                        {/* Expertise List */}
                         <div>
-                          <h4 style={{ color: '#a855f7', fontSize: '0.9rem', marginBottom: '0.75rem' }}>EXPERTISE LIST</h4>
-                          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                            <input placeholder="Add Expertise (e.g. ERP Systems)..." value={newExpertise} onChange={(e) => setNewExpertise(e.target.value)} style={{ flex: 1 }} />
+                          <label style={{ color: '#a855f7', marginBottom: '0.5rem', display: 'block' }}>CORE EXPERTISE BADGES</label>
+                          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.85rem' }}>
+                            <input
+                              placeholder="Type expertise (e.g. Agile Delivery)..."
+                              value={newExpertise}
+                              onChange={(e) => setNewExpertise(e.target.value)}
+                              style={{ flex: 1 }}
+                            />
                             <button className="btn btn-primary" onClick={handleAddExpertise}>
-                              <Plus size={16} /> Add
+                              <Plus size={16} /> Add Expertise
                             </button>
                           </div>
-                          <div className="skills-badge-container" style={{ marginBottom: '1.5rem' }}>
+
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                             {resumeData.expertise.map((item, i) => (
-                              <span key={i} className="skill-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }} onClick={() => handleRemoveExpertise(i)}>
-                                {item} <Trash2 size={12} style={{ color: '#ef4444' }} />
+                              <span
+                                key={i}
+                                style={{
+                                  background: 'rgba(168, 85, 247, 0.15)', border: '1px solid rgba(168, 85, 247, 0.3)',
+                                  color: '#e9d5ff', padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.85rem',
+                                  fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.5rem'
+                                }}>
+                                {item}
+                                <Trash2
+                                  size={13}
+                                  style={{ color: '#ef4444', cursor: 'pointer' }}
+                                  onClick={() => handleRemoveExpertise(i)}
+                                />
                               </span>
                             ))}
                           </div>
+                        </div>
 
-                          <h4 style={{ color: '#38bdf8', fontSize: '0.9rem', marginBottom: '0.75rem' }}>TOOLS & TECHNOLOGIES</h4>
-                          <div className="skills-badge-container">
-                            {resumeData.toolsAndTech.map((t, i) => (
-                              <span key={i} className="skill-badge">{t}</span>
+                        {/* Tools & Technologies */}
+                        <div style={{ marginTop: '1rem' }}>
+                          <label style={{ color: '#38bdf8', marginBottom: '0.5rem', display: 'block' }}>TOOLS & TECHNOLOGIES</label>
+                          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.85rem' }}>
+                            <input
+                              placeholder="Type tool name (e.g. ChatGPT, JIRA)..."
+                              value={newTool}
+                              onChange={(e) => setNewTool(e.target.value)}
+                              style={{ flex: 1 }}
+                            />
+                            <button className="btn btn-secondary" onClick={handleAddTool}>
+                              <Plus size={16} /> Add Tool
+                            </button>
+                          </div>
+
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            {resumeData.toolsAndTech.map((tool, i) => (
+                              <span
+                                key={i}
+                                style={{
+                                  background: 'rgba(56, 189, 248, 0.12)', border: '1px solid rgba(56, 189, 248, 0.3)',
+                                  color: '#7dd3fc', padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.85rem',
+                                  fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.5rem'
+                                }}>
+                                {tool}
+                                <Trash2
+                                  size={13}
+                                  style={{ color: '#ef4444', cursor: 'pointer' }}
+                                  onClick={() => handleRemoveTool(i)}
+                                />
+                              </span>
                             ))}
                           </div>
                         </div>
-                      )}
+                      </div>
+                    )}
 
-                      {/* Section 3: Professional Experience */}
-                      {activeTab === 'experience' && (
-                        <div>
-                          {resumeData.experiences.map((exp, idx) => (
-                            <div key={exp.id || idx} style={{ background: '#1e293b', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid rgba(255,255,255,0.08)' }}>
-                              <div className="form-grid">
-                                <div className="form-group">
-                                  <label>Role Title</label>
-                                  <input value={exp.role} onChange={(e) => {
+                    {/* SECTION 3: PROFESSIONAL EXPERIENCE */}
+                    {activeTab === 'experience' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        <div style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem' }}>
+                          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'white' }}>Professional Work Experience</h3>
+                          <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Format job roles and bullet-point accomplishments using the MS Word ribbon.</p>
+                        </div>
+
+                        {resumeData.experiences.map((exp, idx) => (
+                          <div
+                            key={exp.id || idx}
+                            style={{
+                              background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)',
+                              borderRadius: '10px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem'
+                            }}>
+                            <div className="form-grid">
+                              <div className="form-group">
+                                <label>Role / Position Title</label>
+                                <input
+                                  value={exp.role}
+                                  onChange={(e) => {
                                     const updated = resumeData.experiences.map((x, i) => i === idx ? { ...x, role: e.target.value } : x);
                                     setResumeData(prev => ({ ...prev, experiences: updated }));
-                                  }} />
-                                </div>
-                                <div className="form-group">
-                                  <label>Dates (e.g. APRIL 2022 – PRESENT)</label>
-                                  <input value={exp.dates} onChange={(e) => {
+                                  }}
+                                />
+                              </div>
+                              <div className="form-group">
+                                <label>Dates (e.g. APRIL 2022 – PRESENT)</label>
+                                <input
+                                  value={exp.dates}
+                                  onChange={(e) => {
                                     const updated = resumeData.experiences.map((x, i) => i === idx ? { ...x, dates: e.target.value } : x);
                                     setResumeData(prev => ({ ...prev, experiences: updated }));
-                                  }} />
-                                </div>
+                                  }}
+                                />
                               </div>
-                              <div className="form-group">
-                                <label>Company Name</label>
-                                <input value={exp.company} onChange={(e) => {
+                            </div>
+
+                            <div className="form-group">
+                              <label>Company / Organization Name</label>
+                              <input
+                                value={exp.company}
+                                onChange={(e) => {
                                   const updated = resumeData.experiences.map((x, i) => i === idx ? { ...x, company: e.target.value } : x);
                                   setResumeData(prev => ({ ...prev, experiences: updated }));
-                                }} />
-                              </div>
-                              <div className="form-group">
+                                }}
+                              />
+                            </div>
+
+                            {/* KEY CONTRIBUTIONS WITH MS WORD TOOLBAR */}
+                            <div className="form-group">
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                                 <label>Key Contributions (One bullet per line)</label>
-                                <textarea rows={6} value={exp.keyContributions?.join('\n')} onChange={(e) => {
+                                <span style={{ fontSize: '0.75rem', color: '#c084fc', fontWeight: 600 }}>MS Word Formatting</span>
+                              </div>
+
+                              <WordToolbar
+                                fieldName="keyContributions"
+                                onAction={(act, val) => handleWordFormatting(
+                                  exp.keyContributions?.join('\n') || '',
+                                  (newText) => {
+                                    const lines = newText.split('\n');
+                                    const updated = resumeData.experiences.map((x, i) => i === idx ? { ...x, keyContributions: lines } : x);
+                                    setResumeData(prev => ({ ...prev, experiences: updated }));
+                                  },
+                                  act, val
+                                )}
+                                onAiPolish={() => setIsAIModalOpen(true)}
+                              />
+
+                              <textarea
+                                rows={6}
+                                style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0, fontSize: '0.88rem', lineHeight: 1.6 }}
+                                value={exp.keyContributions?.join('\n')}
+                                onChange={(e) => {
                                   const lines = e.target.value.split('\n');
                                   const updated = resumeData.experiences.map((x, i) => i === idx ? { ...x, keyContributions: lines } : x);
                                   setResumeData(prev => ({ ...prev, experiences: updated }));
-                                }} />
-                              </div>
+                                }}
+                              />
                             </div>
-                          ))}
-                        </div>
-                      )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
-                      {/* Section 4: Projects */}
-                      {activeTab === 'projects' && (
-                        <div>
-                          {resumeData.projects.map((proj, idx) => (
-                            <div key={proj.id || idx} style={{ background: '#1e293b', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid rgba(255,255,255,0.08)' }}>
-                              <div className="form-grid">
-                                <div className="form-group">
-                                  <label>Project Name</label>
-                                  <input value={proj.name} onChange={(e) => {
+                    {/* SECTION 4: PROJECTS */}
+                    {activeTab === 'projects' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        <div style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem' }}>
+                          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'white' }}>Key Projects & Enterprise Implementations</h3>
+                          <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Detail project achievements and deliverables.</p>
+                        </div>
+
+                        {resumeData.projects.map((proj, idx) => (
+                          <div
+                            key={proj.id || idx}
+                            style={{
+                              background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)',
+                              borderRadius: '10px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem'
+                            }}>
+                            <div className="form-grid">
+                              <div className="form-group">
+                                <label>Project Title</label>
+                                <input
+                                  value={proj.name}
+                                  onChange={(e) => {
                                     const updated = resumeData.projects.map((p, i) => i === idx ? { ...p, name: e.target.value } : p);
                                     setResumeData(prev => ({ ...prev, projects: updated }));
-                                  }} />
-                                </div>
-                                <div className="form-group">
-                                  <label>Subtitle / Modules</label>
-                                  <input value={proj.subtitle || ''} onChange={(e) => {
-                                    const updated = resumeData.projects.map((p, i) => i === idx ? { ...p, subtitle: e.target.value } : p);
-                                    setResumeData(prev => ({ ...prev, projects: updated }));
-                                  }} />
-                                </div>
+                                  }}
+                                />
                               </div>
                               <div className="form-group">
-                                <label>Project Bullet Points (One per line)</label>
-                                <textarea rows={4} value={proj.points?.join('\n')} onChange={(e) => {
+                                <label>Modules / Subtitle</label>
+                                <input
+                                  value={proj.subtitle || ''}
+                                  onChange={(e) => {
+                                    const updated = resumeData.projects.map((p, i) => i === idx ? { ...p, subtitle: e.target.value } : p);
+                                    setResumeData(prev => ({ ...prev, projects: updated }));
+                                  }}
+                                />
+                              </div>
+                            </div>
+
+                            <div className="form-group">
+                              <label>Project Highlights (One per line)</label>
+                              <WordToolbar
+                                fieldName="projects"
+                                onAction={(act, val) => handleWordFormatting(
+                                  proj.points?.join('\n') || '',
+                                  (newText) => {
+                                    const lines = newText.split('\n');
+                                    const updated = resumeData.projects.map((p, i) => i === idx ? { ...p, points: lines } : p);
+                                    setResumeData(prev => ({ ...prev, projects: updated }));
+                                  },
+                                  act, val
+                                )}
+                                onAiPolish={() => setIsAIModalOpen(true)}
+                              />
+
+                              <textarea
+                                rows={5}
+                                style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0, fontSize: '0.88rem', lineHeight: 1.6 }}
+                                value={proj.points?.join('\n')}
+                                onChange={(e) => {
                                   const lines = e.target.value.split('\n');
                                   const updated = resumeData.projects.map((p, i) => i === idx ? { ...p, points: lines } : p);
                                   setResumeData(prev => ({ ...prev, projects: updated }));
-                                }} />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Section 5: Key Achievements */}
-                      {activeTab === 'achievements' && (
-                        <div>
-                          {resumeData.keyAchievements.map((ach, idx) => (
-                            <div key={idx} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                              <input style={{ width: '60px', textAlign: 'center' }} value={ach.icon} onChange={(e) => {
-                                const updated = resumeData.keyAchievements.map((a, i) => i === idx ? { ...a, icon: e.target.value } : a);
-                                setResumeData(prev => ({ ...prev, keyAchievements: updated }));
-                              }} />
-                              <input style={{ flex: 1 }} value={ach.text} onChange={(e) => {
-                                const updated = resumeData.keyAchievements.map((a, i) => i === idx ? { ...a, text: e.target.value } : a);
-                                setResumeData(prev => ({ ...prev, keyAchievements: updated }));
-                              }} />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* DYNAMIC CUSTOM SECTION FORM */}
-                      {resumeData.customSections?.map(sec => {
-                        if (activeTab !== sec.id) return null;
-                        return (
-                          <div key={sec.id}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
-                              <h3 style={{ color: '#c084fc', fontSize: '1.1rem', fontWeight: 700 }}>{sec.heading}</h3>
-                              <button onClick={() => handleRemoveCustomSection(sec.id)} style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                <Trash2 size={14} /> Remove Heading
-                              </button>
-                            </div>
-
-                            {/* Format Choice: Paragraph vs Bullets */}
-                            <div className="form-group">
-                              <label>Format Choice</label>
-                              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.3rem' }}>
-                                <button
-                                  type="button"
-                                  onClick={() => handleUpdateCustomSection(sec.id, 'format', 'paragraph')}
-                                  style={{
-                                    flex: 1, padding: '0.5rem', border: 'none', borderRadius: '6px', cursor: 'pointer',
-                                    background: sec.format === 'paragraph' ? '#6366f1' : '#0f172a', color: 'white', fontWeight: 600, fontSize: '0.85rem'
-                                  }}>
-                                  Paragraph Format
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleUpdateCustomSection(sec.id, 'format', 'bullets')}
-                                  style={{
-                                    flex: 1, padding: '0.5rem', border: 'none', borderRadius: '6px', cursor: 'pointer',
-                                    background: sec.format === 'bullets' ? '#6366f1' : '#0f172a', color: 'white', fontWeight: 600, fontSize: '0.85rem'
-                                  }}>
-                                  Bullet Points Format
-                                </button>
-                              </div>
-                            </div>
-
-                            {sec.format === 'paragraph' ? (
-                              <div className="form-group">
-                                <label>Paragraph Content</label>
-                                <textarea rows={6} value={sec.paragraphText} onChange={e => handleUpdateCustomSection(sec.id, 'paragraphText', e.target.value)} />
-                              </div>
-                            ) : (
-                              <div className="form-group">
-                                <label>Bullet Points (One per line)</label>
-                                <textarea rows={6} value={sec.bullets?.join('\n')} onChange={e => handleUpdateCustomSection(sec.id, 'bullets', e.target.value.split('\n'))} />
-                              </div>
-                            )}
-
-                            {/* Section Alignment & Font Color */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
-                              <div className="form-group">
-                                <label>Section Alignment</label>
-                                <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.3rem' }}>
-                                  <button onClick={() => handleUpdateCustomSection(sec.id, 'alignment', 'left')} style={{ flex: 1, padding: '0.4rem', background: sec.alignment === 'left' ? '#6366f1' : '#0f172a', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                                    <AlignLeft size={14} />
-                                  </button>
-                                  <button onClick={() => handleUpdateCustomSection(sec.id, 'alignment', 'center')} style={{ flex: 1, padding: '0.4rem', background: sec.alignment === 'center' ? '#6366f1' : '#0f172a', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                                    <AlignCenter size={14} />
-                                  </button>
-                                  <button onClick={() => handleUpdateCustomSection(sec.id, 'alignment', 'right')} style={{ flex: 1, padding: '0.4rem', background: sec.alignment === 'right' ? '#6366f1' : '#0f172a', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                                    <AlignRight size={14} />
-                                  </button>
-                                </div>
-                              </div>
+                                }}
+                              />
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
-                  </section>
+                        ))}
+                      </div>
+                    )}
 
-                  {/* Live Preview Panel */}
-                  <section className="preview-panel">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                      <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 600 }}>LIVE PREVIEW</span>
-                      <button className="btn btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => window.print()}>
-                        <Download size={14} /> Download PDF
-                      </button>
-                    </div>
-                    <ResumePreview resumeData={resumeData} templateId={templateId} />
-                  </section>
+                    {/* SECTION 5: KEY ACHIEVEMENTS */}
+                    {activeTab === 'achievements' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                        <div style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem' }}>
+                          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'white' }}>Key Achievements</h3>
+                          <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Quantifiable outcomes and metric wins.</p>
+                        </div>
+
+                        {resumeData.keyAchievements.map((ach, idx) => (
+                          <div key={idx} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                            <input
+                              style={{ width: '60px', textAlign: 'center', fontSize: '1.1rem' }}
+                              value={ach.icon}
+                              onChange={(e) => {
+                                const updated = resumeData.keyAchievements.map((a, i) => i === idx ? { ...a, icon: e.target.value } : a);
+                                setResumeData(prev => ({ ...prev, keyAchievements: updated }));
+                              }}
+                            />
+                            <input
+                              style={{ flex: 1 }}
+                              value={ach.text}
+                              onChange={(e) => {
+                                const updated = resumeData.keyAchievements.map((a, i) => i === idx ? { ...a, text: e.target.value } : a);
+                                setResumeData(prev => ({ ...prev, keyAchievements: updated }));
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* DYNAMIC CUSTOM USER SECTIONS */}
+                    {resumeData.customSections?.map(sec => {
+                      if (activeTab !== sec.id) return null;
+                      return (
+                        <div key={sec.id} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.75rem' }}>
+                            <h3 style={{ color: '#c084fc', fontSize: '1.2rem', fontWeight: 800 }}>✨ {sec.heading}</h3>
+                            <button
+                              onClick={() => handleRemoveCustomSection(sec.id)}
+                              style={{
+                                background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: 'none',
+                                padding: '0.45rem 0.9rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 700,
+                                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem'
+                              }}>
+                              <Trash2 size={14} /> Remove Section
+                            </button>
+                          </div>
+
+                          <div className="form-group">
+                            <label>Content Layout Style</label>
+                            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.3rem' }}>
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateCustomSection(sec.id, 'format', 'paragraph')}
+                                style={{
+                                  flex: 1, padding: '0.6rem', border: 'none', borderRadius: '8px', cursor: 'pointer',
+                                  background: sec.format === 'paragraph' ? '#6366f1' : '#0f172a', color: 'white', fontWeight: 700, fontSize: '0.85rem'
+                                }}>
+                                Paragraph Text
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateCustomSection(sec.id, 'format', 'bullets')}
+                                style={{
+                                  flex: 1, padding: '0.6rem', border: 'none', borderRadius: '8px', cursor: 'pointer',
+                                  background: sec.format === 'bullets' ? '#6366f1' : '#0f172a', color: 'white', fontWeight: 700, fontSize: '0.85rem'
+                                }}>
+                                Bullet Points List
+                              </button>
+                            </div>
+                          </div>
+
+                          {sec.format === 'paragraph' ? (
+                            <div className="form-group">
+                              <label>Paragraph Content</label>
+                              <WordToolbar
+                                fieldName="customParagraph"
+                                onAction={(act, val) => handleWordFormatting(
+                                  sec.paragraphText || '',
+                                  (newText) => handleUpdateCustomSection(sec.id, 'paragraphText', newText),
+                                  act, val
+                                )}
+                                onAiPolish={() => setIsAIModalOpen(true)}
+                              />
+                              <textarea
+                                rows={6}
+                                style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0, fontSize: '0.88rem' }}
+                                value={sec.paragraphText}
+                                onChange={e => handleUpdateCustomSection(sec.id, 'paragraphText', e.target.value)}
+                              />
+                            </div>
+                          ) : (
+                            <div className="form-group">
+                              <label>Bullet Points (One per line)</label>
+                              <WordToolbar
+                                fieldName="customBullets"
+                                onAction={(act, val) => handleWordFormatting(
+                                  sec.bullets?.join('\n') || '',
+                                  (newText) => handleUpdateCustomSection(sec.id, 'bullets', newText.split('\n')),
+                                  act, val
+                                )}
+                                onAiPolish={() => setIsAIModalOpen(true)}
+                              />
+                              <textarea
+                                rows={6}
+                                style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0, fontSize: '0.88rem' }}
+                                value={sec.bullets?.join('\n')}
+                                onChange={e => handleUpdateCustomSection(sec.id, 'bullets', e.target.value.split('\n'))}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </main>
               )}
             </div>
@@ -602,7 +870,16 @@ export default function App() {
         </div>
       )}
 
-      {/* Modals */}
+      {/* SOLID, PRINT-READY FULL-SCREEN PREVIEW MODAL (ONLY LOADS ON PREVIEW CLICK) */}
+      <PreviewModal
+        isOpen={isPreviewModalOpen}
+        onClose={() => setIsPreviewModalOpen(false)}
+        resumeData={resumeData}
+        templateId={templateId}
+        onSelectTemplate={(id) => setTemplateId(id)}
+      />
+
+      {/* Auxiliary Modals */}
       <AddHeadingModal
         isOpen={isAddHeadingOpen}
         onClose={() => setIsAddHeadingOpen(false)}
