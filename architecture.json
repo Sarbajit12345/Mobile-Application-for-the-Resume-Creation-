@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "AI-Powered Resume Creation Suite",
-  "version": "1.0.0",
-  "description": "Enterprise cross-platform resume builder application architecture supporting Web, Mobile (Android/iOS), and Backend REST API with database provisioning and AI enhancements.",
+  "version": "1.1.0",
+  "description": "Enterprise cross-platform resume builder application architecture supporting Web, Mobile (Android/iOS), REST Backend Server, DB-Driven Auth (Phone+Password & Phone/Email OTP), User Management Suite, and System Configuration Dashboard.",
   "repository": "https://github.com/Sarbajit12345/Mobile-Application-for-the-Resume-Creation-.git",
   "system_architecture": {
     "monorepo_structure": {
@@ -14,23 +14,23 @@
     "tech_stack": {
       "web": {
         "framework": "React 18 / Vite",
-        "styling": "Vanilla CSS Design System (Custom Tokens, CSS Variables, Glassmorphism, Responsive Grid)",
+        "styling": "Vanilla CSS Design System (Custom Tokens, CSS Variables, Glassmorphism)",
         "icons": "Lucide React",
-        "pdf_generation": "HTML5 Canvas / Window Print Engine & Client-side PDF Renderer",
+        "authentication": "Dual Mode (Phone/Email + Password & Phone/Email + OTP)",
+        "pdf_generation": "HTML5 Canvas & Client-side PDF Engine",
         "state_management": "React Context / Hooks with Local Storage Synchronization"
       },
       "mobile": {
-        "framework": "React / PWA / Cross-Platform Mobile Web Architecture",
-        "ui_paradigm": "Touch-First Swipeable Wizard Tabs & Action Sheets",
-        "pdf_export": "Mobile Native Blob / PDF Saver",
-        "offline_support": "Service Worker & Local Storage cache"
+        "framework": "React / Cross-Platform Mobile Touch Engine",
+        "ui_paradigm": "Swipeable Wizard Tabs, Touch Auth Drawers & Action Sheets",
+        "pdf_export": "Mobile Native PDF Saver",
+        "offline_support": "Local Storage Sync"
       },
       "server": {
         "runtime": "Node.js (v18+ / v20+)",
         "framework": "Express.js REST API",
-        "orm_database_ready": "Prisma ORM (Schema ready for PostgreSQL, MongoDB, or SQLite)",
-        "ai_integration": "Google Gemini API / OpenAI API / Heuristic NLP Engine fallback",
-        "cors_policy": "Cross-Origin Enabled for Web & Mobile clients"
+        "orm_database_ready": "Prisma ORM (PostgreSQL, MongoDB, or SQLite)",
+        "security": "Passcode Hash, Email/Phone Verification Tokens, Security Audit Logging"
       }
     }
   },
@@ -40,76 +40,56 @@
     "entities": {
       "User": {
         "id": "String (UUID/ObjectId)",
+        "fullName": "String",
         "email": "String (Unique)",
-        "name": "String",
+        "phone": "String (Unique)",
+        "passwordHash": "String",
+        "isEmailVerified": "Boolean",
+        "isPhoneVerified": "Boolean",
+        "role": "Enum(ADMIN, USER)",
+        "lastLoginAt": "DateTime",
         "createdAt": "DateTime",
         "updatedAt": "DateTime"
+      },
+      "AuthConfig": {
+        "id": "String (Primary Key)",
+        "requireEmailVerification": "Boolean",
+        "requirePhoneOtp": "Boolean",
+        "allowPasswordAuth": "Boolean",
+        "allowOtpAuth": "Boolean",
+        "otpExpirySeconds": "Int",
+        "maxOtpAttempts": "Int",
+        "sessionDurationHours": "Int",
+        "updatedAt": "DateTime"
+      },
+      "VerificationToken": {
+        "id": "String",
+        "target": "String (Email or Phone)",
+        "code": "String (6-digit PIN)",
+        "type": "Enum(EMAIL_VERIFY, PHONE_OTP)",
+        "expiresAt": "DateTime",
+        "used": "Boolean"
+      },
+      "SecurityLog": {
+        "id": "String",
+        "userId": "String",
+        "action": "String",
+        "ipAddress": "String",
+        "createdAt": "DateTime"
       },
       "Resume": {
         "id": "String (UUID/ObjectId)",
         "userId": "String (Foreign key to User)",
         "title": "String",
         "templateId": "String",
-        "personalDetails": {
-          "fullName": "String",
-          "email": "String",
-          "phone": "String",
-          "location": "String",
-          "website": "String",
-          "github": "String",
-          "linkedin": "String",
-          "summary": "Text"
-        },
-        "experiences": [
-          {
-            "id": "String",
-            "company": "String",
-            "position": "String",
-            "startDate": "String",
-            "endDate": "String",
-            "current": "Boolean",
-            "description": "Text"
-          }
-        ],
-        "education": [
-          {
-            "id": "String",
-            "institution": "String",
-            "degree": "String",
-            "fieldOfStudy": "String",
-            "startDate": "String",
-            "endDate": "String",
-            "grade": "String"
-          }
-        ],
-        "skills": ["String"],
-        "projects": [
-          {
-            "id": "String",
-            "name": "String",
-            "description": "Text",
-            "link": "String",
-            "technologies": ["String"]
-          }
-        ],
-        "certifications": [
-          {
-            "id": "String",
-            "name": "String",
-            "issuer": "String",
-            "date": "String"
-          }
-        ],
+        "personalDetails": "Object",
+        "experiences": "Array<Object>",
+        "education": "Array<Object>",
+        "skills": "Array<String>",
+        "projects": "Array<Object>",
+        "certifications": "Array<Object>",
         "createdAt": "DateTime",
         "updatedAt": "DateTime"
-      },
-      "AILog": {
-        "id": "String",
-        "resumeId": "String",
-        "actionType": "Enum(SUMMARY_GENERATE, BULLET_ENHANCE, ATS_ANALYSIS)",
-        "inputTokens": "Int",
-        "outputTokens": "Int",
-        "createdAt": "DateTime"
       }
     }
   },
@@ -119,86 +99,73 @@
       {
         "path": "/health",
         "method": "GET",
-        "description": "Health check status of API backend"
+        "description": "Health check status"
       },
       {
-        "path": "/resumes",
+        "path": "/auth/config",
         "method": "GET",
-        "description": "Fetch all user resumes"
+        "description": "Fetch active database auth configuration"
       },
       {
-        "path": "/resumes",
-        "method": "POST",
-        "description": "Create a new resume record"
-      },
-      {
-        "path": "/resumes/:id",
+        "path": "/auth/config",
         "method": "PUT",
-        "description": "Update an existing resume record by ID"
+        "description": "Update database auth configuration settings"
+      },
+      {
+        "path": "/auth/register",
+        "method": "POST",
+        "description": "Register user with basic details (Name, Email, Phone, Password) and generate verification code"
+      },
+      {
+        "path": "/auth/verify-code",
+        "method": "POST",
+        "description": "Verify 6-digit Email/Phone PIN to activate account"
+      },
+      {
+        "path": "/auth/login-password",
+        "method": "POST",
+        "description": "Authenticate user via Phone/Email + Password"
+      },
+      {
+        "path": "/auth/send-otp",
+        "method": "POST",
+        "description": "Generate and send 6-digit OTP code to Phone/Email"
+      },
+      {
+        "path": "/auth/login-otp",
+        "method": "POST",
+        "description": "Authenticate user via verified OTP"
+      },
+      {
+        "path": "/users/profile",
+        "method": "GET / PUT",
+        "description": "Fetch or update logged-in user profile"
+      },
+      {
+        "path": "/users/change-password",
+        "method": "POST",
+        "description": "Change account password"
+      },
+      {
+        "path": "/users/security-logs",
+        "method": "GET",
+        "description": "Retrieve account security audit log events"
       },
       {
         "path": "/ai/generate-summary",
         "method": "POST",
-        "description": "AI engine endpoint to generate professional summaries based on role and skills",
-        "payload": {
-          "jobTitle": "String",
-          "skills": "Array<String>",
-          "experienceLevel": "String"
-        }
+        "description": "AI professional summary generator"
       },
       {
         "path": "/ai/enhance-bullets",
         "method": "POST",
-        "description": "AI engine endpoint to convert simple job descriptions into strong action-verb bullet points",
-        "payload": {
-          "rawText": "String",
-          "role": "String"
-        }
+        "description": "AI action-verb bullet point enhancer"
       },
       {
         "path": "/ai/ats-score",
         "method": "POST",
-        "description": "AI engine endpoint to calculate ATS resume score and suggest keyword optimizations",
-        "payload": {
-          "resumeData": "Object",
-          "targetRole": "String"
-        }
+        "description": "ATS compatibility score inspector"
       }
     ]
-  },
-  "ai_features": [
-    {
-      "name": "AI Executive Summary Generator",
-      "description": "Crafts compelling 2-4 sentence professional summaries tailored to target roles."
-    },
-    {
-      "name": "Action-Verb Bullet Point Enhancer",
-      "description": "Transforms plain job responsibilities into quantified achievement-driven statements."
-    },
-    {
-      "name": "Skill Recommender Engine",
-      "description": "Predicts missing high-demand technical and soft skills based on job title."
-    },
-    {
-      "name": "ATS Compatibility Inspector",
-      "description": "Scans resume structure, keywords, and density to provide an ATS score out of 100 with recommendations."
-    }
-  ],
-  "templates": [
-    {
-      "id": "modern-minimal",
-      "name": "Modern Minimalist",
-      "description": "Clean single-column layout with sleek typography and subtle accent borders."
-    },
-    {
-      "id": "executive-split",
-      "name": "Executive Split Column",
-      "description": "Two-column layout separating contact/skills from core work experience."
-    },
-    {
-      "id": "tech-bold",
-      "name": "Tech Innovator",
-      "description": "Dark-accented modern layout tailored for developers and product designers."
-    }
-  ]
+  }
 }

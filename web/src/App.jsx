@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
-import { FileText, Sparkles, Download, Upload, Plus, Trash2, Layout, Smartphone } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { FileText, Sparkles, Download, Upload, Plus, Trash2, User, LogIn, UserPlus, Settings, Shield } from 'lucide-react';
 import ResumePreview from './components/ResumePreview';
 import AIAssistantModal from './components/AIAssistantModal';
+import AuthModal from './components/AuthModal';
+import RegisterModal from './components/RegisterModal';
+import UserManagementPage from './components/UserManagementPage';
+import ConfigPage from './components/ConfigPage';
 
 const initialResumeData = {
   personalDetails: {
@@ -49,12 +53,25 @@ const initialResumeData = {
 
 export default function App() {
   const [resumeData, setResumeData] = useState(initialResumeData);
+  const [currentView, setCurrentView] = useState('editor'); // 'editor', 'user-mgmt', 'config'
   const [activeTab, setActiveTab] = useState('personal');
   const [templateId, setTemplateId] = useState('modern-minimal');
+  
+  // Auth state
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+  const [dbConfig, setDbConfig] = useState(null);
   const [newSkill, setNewSkill] = useState('');
 
-  // Personal details updates
+  useEffect(() => {
+    fetch('http://localhost:5000/api/auth/config')
+      .then(res => res.json())
+      .then(data => { if (data.success) setDbConfig(data.data); })
+      .catch(() => {});
+  }, []);
+
   const handlePersonalChange = (field, value) => {
     setResumeData(prev => ({
       ...prev,
@@ -62,7 +79,6 @@ export default function App() {
     }));
   };
 
-  // Experience handlers
   const handleAddExperience = () => {
     setResumeData(prev => ({
       ...prev,
@@ -87,7 +103,6 @@ export default function App() {
     }));
   };
 
-  // Education handlers
   const handleAddEducation = () => {
     setResumeData(prev => ({
       ...prev,
@@ -105,7 +120,6 @@ export default function App() {
     }));
   };
 
-  // Skill handlers
   const handleAddSkill = () => {
     if (!newSkill.trim()) return;
     setResumeData(prev => ({
@@ -122,7 +136,6 @@ export default function App() {
     }));
   };
 
-  // JSON Export / Import
   const handleExportJSON = () => {
     const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(resumeData, null, 2))}`;
     const downloadAnchor = document.createElement('a');
@@ -152,184 +165,251 @@ export default function App() {
     <div className="app-container">
       {/* Navbar */}
       <header className="navbar">
-        <div className="brand">
+        <div className="brand" style={{ cursor: 'pointer' }} onClick={() => setCurrentView('editor')}>
           <FileText className="brand-icon" />
           <span>AI Resume Craft</span>
         </div>
 
+        {/* View Switcher */}
+        <div style={{ display: 'flex', gap: '0.4rem', background: '#0f172a', padding: '0.25rem', borderRadius: '10px' }}>
+          <button
+            onClick={() => setCurrentView('editor')}
+            style={{ padding: '0.5rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', background: currentView === 'editor' ? '#6366f1' : 'transparent', color: currentView === 'editor' ? 'white' : '#94a3b8', fontWeight: 600, fontSize: '0.85rem' }}>
+            Resume Builder
+          </button>
+          <button
+            onClick={() => setCurrentView('user-mgmt')}
+            style={{ padding: '0.5rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', background: currentView === 'user-mgmt' ? '#6366f1' : 'transparent', color: currentView === 'user-mgmt' ? 'white' : '#94a3b8', fontWeight: 600, fontSize: '0.85rem' }}>
+            User Management
+          </button>
+          <button
+            onClick={() => setCurrentView('config')}
+            style={{ padding: '0.5rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', background: currentView === 'config' ? '#6366f1' : 'transparent', color: currentView === 'config' ? 'white' : '#94a3b8', fontWeight: 600, fontSize: '0.85rem' }}>
+            System Config
+          </button>
+        </div>
+
+        {/* Auth / Action Buttons */}
         <div className="nav-actions">
+          {currentUser ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#a855f7', fontWeight: 600, fontSize: '0.9rem' }}>
+                <User size={16} /> {currentUser.fullName}
+              </div>
+              <button className="btn btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => setCurrentUser(null)}>
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button className="btn btn-secondary" onClick={() => setIsRegisterModalOpen(true)}>
+                <UserPlus size={16} /> Register
+              </button>
+              <button className="btn btn-primary" onClick={() => setIsAuthModalOpen(true)}>
+                <LogIn size={16} /> Sign In
+              </button>
+            </div>
+          )}
+
           <button className="btn btn-ai" onClick={() => setIsAIModalOpen(true)}>
-            <Sparkles size={16} /> AI Assistant
-          </button>
-          <button className="btn btn-secondary" onClick={handleExportJSON}>
-            <Download size={16} /> Save JSON
-          </button>
-          <label className="btn btn-secondary" style={{ cursor: 'pointer' }}>
-            <Upload size={16} /> Load JSON
-            <input type="file" accept=".json" onChange={handleImportJSON} style={{ display: 'none' }} />
-          </label>
-          <button className="btn btn-primary" onClick={() => window.print()}>
-            <Download size={16} /> Download PDF
+            <Sparkles size={16} /> AI Assist
           </button>
         </div>
       </header>
 
-      {/* Main Workspace */}
-      <main className="main-workspace">
-        {/* Editor Panel */}
-        <section className="editor-panel">
-          <div className="section-tabs">
-            <button className={`tab-btn ${activeTab === 'personal' ? 'active' : ''}`} onClick={() => setActiveTab('personal')}>
-              Personal Info
-            </button>
-            <button className={`tab-btn ${activeTab === 'experience' ? 'active' : ''}`} onClick={() => setActiveTab('experience')}>
-              Experience
-            </button>
-            <button className={`tab-btn ${activeTab === 'education' ? 'active' : ''}`} onClick={() => setActiveTab('education')}>
-              Education
-            </button>
-            <button className={`tab-btn ${activeTab === 'skills' ? 'active' : ''}`} onClick={() => setActiveTab('skills')}>
-              Skills
-            </button>
-          </div>
+      {/* Main Content Area based on current view */}
+      {currentView === 'user-mgmt' && (
+        <UserManagementPage currentUser={currentUser} onUserUpdate={u => setCurrentUser(u)} />
+      )}
 
-          {/* Personal Info Tab */}
-          {activeTab === 'personal' && (
-            <div>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label>Full Name</label>
-                  <input value={resumeData.personalDetails.fullName} onChange={(e) => handlePersonalChange('fullName', e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label>Job Title</label>
-                  <input value={resumeData.personalDetails.jobTitle} onChange={(e) => handlePersonalChange('jobTitle', e.target.value)} />
-                </div>
-              </div>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label>Email</label>
-                  <input value={resumeData.personalDetails.email} onChange={(e) => handlePersonalChange('email', e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label>Phone</label>
-                  <input value={resumeData.personalDetails.phone} onChange={(e) => handlePersonalChange('phone', e.target.value)} />
-                </div>
-              </div>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label>Location</label>
-                  <input value={resumeData.personalDetails.location} onChange={(e) => handlePersonalChange('location', e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label>LinkedIn</label>
-                  <input value={resumeData.personalDetails.linkedin} onChange={(e) => handlePersonalChange('linkedin', e.target.value)} />
-                </div>
-              </div>
-              <div className="form-group">
-                <label>Professional Summary</label>
-                <textarea value={resumeData.personalDetails.summary} onChange={(e) => handlePersonalChange('summary', e.target.value)} />
-              </div>
-            </div>
-          )}
+      {currentView === 'config' && (
+        <ConfigPage onConfigUpdated={cfg => setDbConfig(cfg)} />
+      )}
 
-          {/* Experience Tab */}
-          {activeTab === 'experience' && (
-            <div>
-              {resumeData.experiences.map((exp, idx) => (
-                <div key={exp.id} style={{ background: '#1e293b', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <strong style={{ color: '#a855f7' }}>Experience #{idx + 1}</strong>
-                    <button onClick={() => handleRemoveExperience(exp.id)} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}>
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                  <div className="form-grid">
-                    <div className="form-group">
-                      <label>Company</label>
-                      <input value={exp.company} onChange={(e) => handleUpdateExperience(exp.id, 'company', e.target.value)} />
-                    </div>
-                    <div className="form-group">
-                      <label>Position</label>
-                      <input value={exp.position} onChange={(e) => handleUpdateExperience(exp.id, 'position', e.target.value)} />
-                    </div>
-                  </div>
-                  <div className="form-grid">
-                    <div className="form-group">
-                      <label>Start Date</label>
-                      <input value={exp.startDate} onChange={(e) => handleUpdateExperience(exp.id, 'startDate', e.target.value)} />
-                    </div>
-                    <div className="form-group">
-                      <label>End Date</label>
-                      <input value={exp.endDate} onChange={(e) => handleUpdateExperience(exp.id, 'endDate', e.target.value)} />
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label>Description / Achievements</label>
-                    <textarea value={exp.description} onChange={(e) => handleUpdateExperience(exp.id, 'description', e.target.value)} />
-                  </div>
-                </div>
-              ))}
-              <button className="btn btn-secondary" onClick={handleAddExperience} style={{ width: '100%' }}>
-                <Plus size={16} /> Add Work Experience
-              </button>
-            </div>
-          )}
-
-          {/* Education Tab */}
-          {activeTab === 'education' && (
-            <div>
-              {resumeData.education.map((edu, idx) => (
-                <div key={edu.id} style={{ background: '#1e293b', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <div className="form-grid">
-                    <div className="form-group">
-                      <label>Institution</label>
-                      <input value={edu.institution} onChange={(e) => handleUpdateEducation(edu.id, 'institution', e.target.value)} />
-                    </div>
-                    <div className="form-group">
-                      <label>Degree</label>
-                      <input value={edu.degree} onChange={(e) => handleUpdateEducation(edu.id, 'degree', e.target.value)} />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <button className="btn btn-secondary" onClick={handleAddEducation} style={{ width: '100%' }}>
-                <Plus size={16} /> Add Education
-              </button>
-            </div>
-          )}
-
-          {/* Skills Tab */}
-          {activeTab === 'skills' && (
-            <div>
-              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                <input placeholder="Add a skill (e.g. Python, AWS)..." value={newSkill} onChange={(e) => setNewSkill(e.target.value)} style={{ flex: 1 }} />
-                <button className="btn btn-primary" onClick={handleAddSkill}>
-                  <Plus size={16} /> Add
+      {currentView === 'editor' && (
+        <main className="main-workspace">
+          {/* Editor Panel */}
+          <section className="editor-panel">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="section-tabs" style={{ borderBottom: 'none', paddingBottom: 0 }}>
+                <button className={`tab-btn ${activeTab === 'personal' ? 'active' : ''}`} onClick={() => setActiveTab('personal')}>
+                  Personal Info
+                </button>
+                <button className={`tab-btn ${activeTab === 'experience' ? 'active' : ''}`} onClick={() => setActiveTab('experience')}>
+                  Experience
+                </button>
+                <button className={`tab-btn ${activeTab === 'education' ? 'active' : ''}`} onClick={() => setActiveTab('education')}>
+                  Education
+                </button>
+                <button className={`tab-btn ${activeTab === 'skills' ? 'active' : ''}`} onClick={() => setActiveTab('skills')}>
+                  Skills
                 </button>
               </div>
-              <div className="skills-badge-container">
-                {resumeData.skills.map((skill, i) => (
-                  <span key={i} className="skill-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }} onClick={() => handleRemoveSkill(skill)}>
-                    {skill} <Trash2 size={12} style={{ color: '#ef4444' }} />
-                  </span>
-                ))}
+
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button className="btn btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={handleExportJSON}>
+                  <Download size={14} /> Save JSON
+                </button>
+                <label className="btn btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', cursor: 'pointer' }}>
+                  <Upload size={14} /> Load JSON
+                  <input type="file" accept=".json" onChange={handleImportJSON} style={{ display: 'none' }} />
+                </label>
               </div>
             </div>
-          )}
-        </section>
 
-        {/* Live Preview Panel */}
-        <section className="preview-panel">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 600 }}>LIVE PREVIEW</span>
-            <span style={{ fontSize: '0.8rem', color: '#a855f7' }}>A4 Document Format</span>
-          </div>
-          <ResumePreview resumeData={resumeData} templateId={templateId} />
-        </section>
-      </main>
+            {/* Personal Info Tab */}
+            {activeTab === 'personal' && (
+              <div>
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label>Full Name</label>
+                    <input value={resumeData.personalDetails.fullName} onChange={(e) => handlePersonalChange('fullName', e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label>Job Title</label>
+                    <input value={resumeData.personalDetails.jobTitle} onChange={(e) => handlePersonalChange('jobTitle', e.target.value)} />
+                  </div>
+                </div>
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label>Email</label>
+                    <input value={resumeData.personalDetails.email} onChange={(e) => handlePersonalChange('email', e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label>Phone</label>
+                    <input value={resumeData.personalDetails.phone} onChange={(e) => handlePersonalChange('phone', e.target.value)} />
+                  </div>
+                </div>
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label>Location</label>
+                    <input value={resumeData.personalDetails.location} onChange={(e) => handlePersonalChange('location', e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label>LinkedIn</label>
+                    <input value={resumeData.personalDetails.linkedin} onChange={(e) => handlePersonalChange('linkedin', e.target.value)} />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Professional Summary</label>
+                  <textarea value={resumeData.personalDetails.summary} onChange={(e) => handlePersonalChange('summary', e.target.value)} />
+                </div>
+              </div>
+            )}
 
-      {/* AI Assistant Modal */}
+            {/* Experience Tab */}
+            {activeTab === 'experience' && (
+              <div>
+                {resumeData.experiences.map((exp, idx) => (
+                  <div key={exp.id} style={{ background: '#1e293b', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <strong style={{ color: '#a855f7' }}>Experience #{idx + 1}</strong>
+                      <button onClick={() => handleRemoveExperience(exp.id)} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}>
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label>Company</label>
+                        <input value={exp.company} onChange={(e) => handleUpdateExperience(exp.id, 'company', e.target.value)} />
+                      </div>
+                      <div className="form-group">
+                        <label>Position</label>
+                        <input value={exp.position} onChange={(e) => handleUpdateExperience(exp.id, 'position', e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label>Start Date</label>
+                        <input value={exp.startDate} onChange={(e) => handleUpdateExperience(exp.id, 'startDate', e.target.value)} />
+                      </div>
+                      <div className="form-group">
+                        <label>End Date</label>
+                        <input value={exp.endDate} onChange={(e) => handleUpdateExperience(exp.id, 'endDate', e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="form-group">
+                      <label>Description / Achievements</label>
+                      <textarea value={exp.description} onChange={(e) => handleUpdateExperience(exp.id, 'description', e.target.value)} />
+                    </div>
+                  </div>
+                ))}
+                <button className="btn btn-secondary" onClick={handleAddExperience} style={{ width: '100%' }}>
+                  <Plus size={16} /> Add Work Experience
+                </button>
+              </div>
+            )}
+
+            {/* Education Tab */}
+            {activeTab === 'education' && (
+              <div>
+                {resumeData.education.map((edu, idx) => (
+                  <div key={edu.id} style={{ background: '#1e293b', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label>Institution</label>
+                        <input value={edu.institution} onChange={(e) => handleUpdateEducation(edu.id, 'institution', e.target.value)} />
+                      </div>
+                      <div className="form-group">
+                        <label>Degree</label>
+                        <input value={edu.degree} onChange={(e) => handleUpdateEducation(edu.id, 'degree', e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <button className="btn btn-secondary" onClick={handleAddEducation} style={{ width: '100%' }}>
+                  <Plus size={16} /> Add Education
+                </button>
+              </div>
+            )}
+
+            {/* Skills Tab */}
+            {activeTab === 'skills' && (
+              <div>
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                  <input placeholder="Add a skill..." value={newSkill} onChange={(e) => setNewSkill(e.target.value)} style={{ flex: 1 }} />
+                  <button className="btn btn-primary" onClick={handleAddSkill}>
+                    <Plus size={16} /> Add
+                  </button>
+                </div>
+                <div className="skills-badge-container">
+                  {resumeData.skills.map((skill, i) => (
+                    <span key={i} className="skill-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }} onClick={() => handleRemoveSkill(skill)}>
+                      {skill} <Trash2 size={12} style={{ color: '#ef4444' }} />
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* Live Preview Panel */}
+          <section className="preview-panel">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+              <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 600 }}>LIVE PREVIEW</span>
+              <button className="btn btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => window.print()}>
+                <Download size={14} /> Print PDF
+              </button>
+            </div>
+            <ResumePreview resumeData={resumeData} templateId={templateId} />
+          </section>
+        </main>
+      )}
+
+      {/* Modals */}
+      <RegisterModal
+        isOpen={isRegisterModalOpen}
+        onClose={() => setIsRegisterModalOpen(false)}
+        onRegisterSuccess={(user) => { setCurrentUser(user); setCurrentView('user-mgmt'); }}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onAuthSuccess={(user) => { setCurrentUser(user); }}
+        dbConfig={dbConfig}
+      />
+
       <AIAssistantModal
         isOpen={isAIModalOpen}
         onClose={() => setIsAIModalOpen(false)}

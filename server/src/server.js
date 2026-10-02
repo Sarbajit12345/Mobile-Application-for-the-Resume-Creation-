@@ -3,6 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import aiRoutes from "./routes/aiRoutes.js";
 import resumeRoutes from "./routes/resumeRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 
@@ -19,11 +21,14 @@ app.get("/api/health", (req, res) => {
     status: "online",
     service: "AI Resume Creation REST API Backend",
     timestamp: new Date().toISOString(),
+    authSupported: ["PHONE_PASSWORD", "PHONE_OTP", "EMAIL_OTP"],
     databaseReady: true
   });
 });
 
 // Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/resumes", resumeRoutes);
 
