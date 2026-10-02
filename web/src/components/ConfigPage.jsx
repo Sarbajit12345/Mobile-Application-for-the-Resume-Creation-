@@ -17,7 +17,7 @@ export default function ConfigPage({ onConfigUpdated }) {
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/auth/config')
+    fetch('http://localhost:5050/api/auth/config')
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data) setConfig(data.data);
@@ -31,7 +31,7 @@ export default function ConfigPage({ onConfigUpdated }) {
     setSaveSuccess(false);
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/config', {
+      const res = await fetch('http://localhost:5050/api/auth/config', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config)

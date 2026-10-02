@@ -14,7 +14,7 @@ export default function AIAssistantModal({ isOpen, onClose, resumeData, onApplyS
   const handleGenerateSummary = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/ai/generate-summary', {
+      const response = await fetch('http://localhost:5050/api/ai/generate-summary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -39,7 +39,7 @@ export default function AIAssistantModal({ isOpen, onClose, resumeData, onApplyS
     if (!bulletInput.trim()) return;
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/ai/enhance-bullets', {
+      const response = await fetch('http://localhost:5050/api/ai/enhance-bullets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -61,7 +61,7 @@ export default function AIAssistantModal({ isOpen, onClose, resumeData, onApplyS
   const handleRunATSCheck = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/ai/ats-score', {
+      const response = await fetch('http://localhost:5050/api/ai/ats-score', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

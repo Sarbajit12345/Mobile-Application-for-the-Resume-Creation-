@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "AI-Powered Resume Creation Suite",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Enterprise cross-platform resume builder application architecture supporting Web, Mobile (Android/iOS), REST Backend Server, DB-Driven Auth (Phone+Password & Phone/Email OTP), User Management Suite, and System Configuration Dashboard.",
   "repository": "https://github.com/Sarbajit12345/Mobile-Application-for-the-Resume-Creation-.git",
   "system_architecture": {
@@ -11,9 +11,25 @@
       "mobile_application": "/mobile",
       "backend_server": "/server"
     },
+    "isolated_network_ports": {
+      "backend_api_server": {
+        "port": 5050,
+        "url": "http://localhost:5050",
+        "health_endpoint": "http://localhost:5050/api/health"
+      },
+      "web_application": {
+        "port": 3000,
+        "url": "http://localhost:3000"
+      },
+      "mobile_application": {
+        "port": 8080,
+        "url": "http://localhost:8080"
+      }
+    },
     "tech_stack": {
       "web": {
         "framework": "React 18 / Vite",
+        "port": 3000,
         "styling": "Vanilla CSS Design System (Custom Tokens, CSS Variables, Glassmorphism)",
         "icons": "Lucide React",
         "authentication": "Dual Mode (Phone/Email + Password & Phone/Email + OTP)",
@@ -22,12 +38,14 @@
       },
       "mobile": {
         "framework": "React / Cross-Platform Mobile Touch Engine",
+        "port": 8080,
         "ui_paradigm": "Swipeable Wizard Tabs, Touch Auth Drawers & Action Sheets",
         "pdf_export": "Mobile Native PDF Saver",
         "offline_support": "Local Storage Sync"
       },
       "server": {
         "runtime": "Node.js (v18+ / v20+)",
+        "port": 5050,
         "framework": "Express.js REST API",
         "orm_database_ready": "Prisma ORM (PostgreSQL, MongoDB, or SQLite)",
         "security": "Passcode Hash, Email/Phone Verification Tokens, Security Audit Logging"
@@ -53,6 +71,7 @@
       },
       "AuthConfig": {
         "id": "String (Primary Key)",
+        "defaultOtpCode": "String (Configurable, Default: '123456')",
         "requireEmailVerification": "Boolean",
         "requirePhoneOtp": "Boolean",
         "allowPasswordAuth": "Boolean",
@@ -94,7 +113,7 @@
     }
   },
   "api_contracts": {
-    "base_url": "http://localhost:5000/api",
+    "base_url": "http://localhost:5050/api",
     "endpoints": [
       {
         "path": "/health",
@@ -109,17 +128,17 @@
       {
         "path": "/auth/config",
         "method": "PUT",
-        "description": "Update database auth configuration settings"
+        "description": "Update database auth configuration settings & default OTP code"
       },
       {
         "path": "/auth/register",
         "method": "POST",
-        "description": "Register user with basic details (Name, Email, Phone, Password) and generate verification code"
+        "description": "Register user with basic details"
       },
       {
         "path": "/auth/verify-code",
         "method": "POST",
-        "description": "Verify 6-digit Email/Phone PIN to activate account"
+        "description": "Verify 6-digit Email/Phone PIN"
       },
       {
         "path": "/auth/login-password",
@@ -129,7 +148,7 @@
       {
         "path": "/auth/send-otp",
         "method": "POST",
-        "description": "Generate and send 6-digit OTP code to Phone/Email"
+        "description": "Generate and send 6-digit OTP code"
       },
       {
         "path": "/auth/login-otp",

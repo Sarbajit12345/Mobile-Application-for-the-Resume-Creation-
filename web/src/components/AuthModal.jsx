@@ -27,7 +27,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, dbConfig }) 
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/login-password', {
+      const res = await fetch('http://localhost:5050/api/auth/login-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier, password })
@@ -57,7 +57,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, dbConfig }) 
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/send-otp', {
+      const res = await fetch('http://localhost:5050/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier })
@@ -87,7 +87,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, dbConfig }) 
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/login-otp', {
+      const res = await fetch('http://localhost:5050/api/auth/login-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier, otpCode })

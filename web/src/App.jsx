@@ -66,7 +66,7 @@ export default function App() {
   const [newSkill, setNewSkill] = useState('');
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/auth/config')
+    fetch('http://localhost:5050/api/auth/config')
       .then(res => res.json())
       .then(data => { if (data.success) setDbConfig(data.data); })
       .catch(() => {});

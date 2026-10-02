@@ -16,7 +16,7 @@ export default function UserManagementPage({ currentUser, onUserUpdate }) {
 
   useEffect(() => {
     // Fetch security audit logs
-    fetch(`http://localhost:5000/api/users/security-logs/${currentUser?.id || 'user_demo'}`)
+    fetch(`http://localhost:5050/api/users/security-logs/${currentUser?.id || 'user_demo'}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) setSecurityLogs(data.data);
@@ -34,7 +34,7 @@ export default function UserManagementPage({ currentUser, onUserUpdate }) {
     e.preventDefault();
     setFeedback('');
     try {
-      const res = await fetch('http://localhost:5000/api/users/profile', {
+      const res = await fetch('http://localhost:5050/api/users/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: currentUser?.id || 'user_demo', ...profile })
@@ -57,7 +57,7 @@ export default function UserManagementPage({ currentUser, onUserUpdate }) {
       return;
     }
     try {
-      const res = await fetch('http://localhost:5000/api/users/change-password', {
+      const res = await fetch('http://localhost:5050/api/users/change-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: currentUser?.id || 'user_demo', newPassword })

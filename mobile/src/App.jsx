@@ -61,7 +61,7 @@ export default function App() {
   const triggerMobileAI = async () => {
     setAiLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/ai/generate-summary', {
+      const res = await fetch('http://localhost:5050/api/ai/generate-summary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -82,7 +82,7 @@ export default function App() {
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://localhost:5000/api/auth/register', {
+      const res = await fetch('http://localhost:5050/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(regForm)
@@ -104,7 +104,7 @@ export default function App() {
   const handlePasswordLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://localhost:5000/api/auth/login-password', {
+      const res = await fetch('http://localhost:5050/api/auth/login-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier: authIdentifier, password: authPassword })
