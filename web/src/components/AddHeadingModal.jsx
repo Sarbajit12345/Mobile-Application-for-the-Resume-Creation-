@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Plus, X, AlignLeft, AlignCenter, AlignRight, Type, List, AlignJustify, Palette } from 'lucide-react';
+import { Plus, X, AlignLeft, AlignCenter, AlignRight, Type, List, AlignJustify, Palette, Sparkles } from 'lucide-react';
+import WordToolbar from './WordToolbar';
 
 export default function AddHeadingModal({ isOpen, onClose, onAddSection }) {
   const [heading, setHeading] = useState('');
@@ -22,6 +23,32 @@ export default function AddHeadingModal({ isOpen, onClose, onAddSection }) {
 
   const handleRemoveBullet = (idx) => {
     setBullets(bullets.filter((_, i) => i !== idx));
+  };
+
+  const handleWordFormatting = (currentVal, setter, actionType, param) => {
+    let newVal = currentVal || '';
+    if (actionType === 'bold') {
+      newVal = newVal ? `${newVal} **bold text**` : '**bold text**';
+    } else if (actionType === 'italic') {
+      newVal = newVal ? `${newVal} *italic text*` : '*italic text*';
+    } else if (actionType === 'underline') {
+      newVal = newVal ? `${newVal} <u>underlined text</u>` : '<u>underlined text</u>';
+    } else if (actionType === 'strikethrough') {
+      newVal = newVal ? `${newVal} ~~strikethrough~~` : '~~strikethrough~~';
+    } else if (actionType === 'bullet') {
+      const lines = newVal.split('\n');
+      newVal = lines.map(l => l.trim().startsWith('• ') ? l : `• ${l.trim()}`).join('\n');
+    } else if (actionType === 'number') {
+      const lines = newVal.split('\n');
+      newVal = lines.map((l, i) => `${i + 1}. ${l.replace(/^(\d+\.|\•)\s*/, '')}`).join('\n');
+    } else if (actionType === 'case') {
+      if (param === 'uppercase') newVal = newVal.toUpperCase();
+      if (param === 'lowercase') newVal = newVal.toLowerCase();
+      if (param === 'titlecase') newVal = newVal.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+    } else if (actionType === 'insert-verb') {
+      newVal = newVal ? `${newVal} ${param}` : param;
+    }
+    setter(newVal);
   };
 
   const handleSubmit = (e) => {
@@ -64,7 +91,7 @@ export default function AddHeadingModal({ isOpen, onClose, onAddSection }) {
     }}>
       <div style={{
         background: '#1e293b', border: '1px solid rgba(99, 102, 241, 0.3)',
-        borderRadius: '16px', width: '100%', maxWidth: '600px', maxHeight: '90vh',
+        borderRadius: '16px', width: '100%', maxWidth: '640px', maxHeight: '90vh',
         overflowY: 'auto', padding: '1.75rem', boxShadow: '0 25px 60px rgba(0,0,0,0.6)',
         color: '#f8fafc', position: 'relative'
       }}>
@@ -122,9 +149,17 @@ export default function AddHeadingModal({ isOpen, onClose, onAddSection }) {
           {/* Content Inputs based on format */}
           {format === 'paragraph' ? (
             <div className="form-group">
-              <label>Paragraph Details</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+                <label>Paragraph Details</label>
+                <span style={{ fontSize: '0.75rem', color: '#38bdf8', fontWeight: 600 }}>MS Word Ribbon Active</span>
+              </div>
+              <WordToolbar
+                fieldName="paragraphText"
+                onAction={(act, val) => handleWordFormatting(paragraphText, setParagraphText, act, val)}
+              />
               <textarea
                 rows={5}
+                style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0, fontSize: '0.88rem' }}
                 placeholder="Write formatted paragraph details for this section..."
                 value={paragraphText}
                 onChange={e => setParagraphText(e.target.value)}
@@ -132,8 +167,18 @@ export default function AddHeadingModal({ isOpen, onClose, onAddSection }) {
             </div>
           ) : (
             <div className="form-group">
-              <label>Bullet Points List</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+                <label>Bullet Points List</label>
+                <span style={{ fontSize: '0.75rem', color: '#38bdf8', fontWeight: 600 }}>MS Word Ribbon Active</span>
+              </div>
+              <WordToolbar
+                fieldName="bullets"
+                onAction={(act, val) => {
+                  const combined = bullets.join('\n');
+                  handleWordFormatting(combined, (newText) => setBullets(newText.split('\n')), act, val);
+                }}
+              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: '#0f172a', padding: '0.85rem', borderBottomLeftRadius: '8px', borderBottomRightRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
                 {bullets.map((b, idx) => (
                   <div key={idx} style={{ display: 'flex', gap: '0.5rem' }}>
                     <input
@@ -149,7 +194,7 @@ export default function AddHeadingModal({ isOpen, onClose, onAddSection }) {
                     )}
                   </div>
                 ))}
-                <button type="button" className="btn btn-secondary" onClick={handleAddBullet} style={{ marginTop: '0.3rem', padding: '0.4rem' }}>
+                <button type="button" className="btn btn-secondary" onClick={handleAddBullet} style={{ marginTop: '0.3rem', padding: '0.4rem', fontSize: '0.8rem' }}>
                   <Plus size={14} /> Add Bullet Point
                 </button>
               </div>
@@ -184,7 +229,10 @@ export default function AddHeadingModal({ isOpen, onClose, onAddSection }) {
 
             <div className="form-group">
               <label>Heading Font Color</label>
-              <select value={fontColor} onChange={e => setFontColor(e.target.value)}>
+              <select
+                value={fontColor}
+                onChange={e => setFontColor(e.target.value)}
+                style={{ marginTop: '0.3rem' }}>
                 {colorOptions.map(c => (
                   <option key={c.value} value={c.value}>{c.label}</option>
                 ))}
@@ -192,8 +240,8 @@ export default function AddHeadingModal({ isOpen, onClose, onAddSection }) {
             </div>
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem', padding: '0.8rem' }}>
-            <Plus size={16} /> Create Custom Section
+          <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem', width: '100%', padding: '0.85rem' }}>
+            + Create Custom Section
           </button>
         </form>
       </div>

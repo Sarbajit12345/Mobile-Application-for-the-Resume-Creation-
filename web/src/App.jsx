@@ -3,7 +3,7 @@ import {
   FileText, Sparkles, Download, Plus, Trash2, User, LogIn, UserPlus,
   Settings, BarChart2, Layout, LogOut, AlignLeft, AlignCenter, AlignRight,
   Type, List, PlusCircle, Eye, CheckCircle2, Briefcase, Award, GraduationCap,
-  Wrench, FolderPlus, HelpCircle
+  Wrench, FolderPlus, HelpCircle, Layers
 } from 'lucide-react';
 import ResumePreview from './components/ResumePreview';
 import AIAssistantModal from './components/AIAssistantModal';
@@ -19,6 +19,7 @@ import Sidebar from './components/Sidebar';
 import AddHeadingModal from './components/AddHeadingModal';
 import WordToolbar from './components/WordToolbar';
 import PreviewModal from './components/PreviewModal';
+import SectionRearrangerModal from './components/SectionRearrangerModal';
 
 // Initial default state matching Sarbajit Behera target resume layout
 const initialResumeData = {
@@ -119,7 +120,8 @@ Currently leading ERP initiatives as a Product Manager, owning product roadmap, 
       alignment: 'left',
       fontColor: '#1e3a8a'
     }
-  ]
+  ],
+  sectionOrder: []
 };
 
 export default function App() {
@@ -135,6 +137,7 @@ export default function App() {
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [isAddHeadingOpen, setIsAddHeadingOpen] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [isRearrangerOpen, setIsRearrangerOpen] = useState(false);
   const [dbConfig, setDbConfig] = useState(null);
 
   // New item inputs
@@ -259,6 +262,7 @@ export default function App() {
             onNavigate={(view) => setCurrentView(view)}
             currentUser={currentUser}
             onSignOut={() => setCurrentUser(null)}
+            onOpenRearranger={() => setIsRearrangerOpen(true)}
           />
 
           {/* Right Main Content Area */}
@@ -274,6 +278,12 @@ export default function App() {
               </div>
 
               <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setIsRearrangerOpen(true)}
+                  style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem', border: '1px dashed rgba(168, 85, 247, 0.4)', color: '#c084fc' }}>
+                  <Layers size={16} /> Rearrange Headings
+                </button>
                 <button
                   className="btn btn-primary"
                   onClick={() => setIsPreviewModalOpen(true)}
@@ -333,16 +343,24 @@ export default function App() {
                         </span>
                       </h2>
                       <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.2rem' }}>
-                        Fill in your resume sections below. Click "Live Preview Resume" anytime to view the crisp A4 print layout.
+                        Fill in your resume sections below. Click "Rearrange Headings" to reorder top to bottom or apply format suggestions.
                       </p>
                     </div>
 
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => setIsPreviewModalOpen(true)}
-                      style={{ padding: '0.65rem 1.25rem', fontSize: '0.9rem' }}>
-                      <Eye size={18} /> Preview Document
-                    </button>
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                      <button
+                        className="btn btn-secondary"
+                        onClick={() => setIsRearrangerOpen(true)}
+                        style={{ padding: '0.65rem 1rem', fontSize: '0.88rem', border: '1px dashed #a855f7', color: '#c084fc' }}>
+                        <Layers size={16} /> Rearrange Headings
+                      </button>
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => setIsPreviewModalOpen(true)}
+                        style={{ padding: '0.65rem 1.25rem', fontSize: '0.9rem' }}>
+                        <Eye size={18} /> Preview Document
+                      </button>
+                    </div>
                   </div>
 
                   {/* Clean Horizontal Section Navigator Tabs */}
@@ -870,13 +888,22 @@ export default function App() {
         </div>
       )}
 
-      {/* SOLID, PRINT-READY FULL-SCREEN PREVIEW MODAL (ONLY LOADS ON PREVIEW CLICK) */}
+      {/* SOLID, PRINT-READY FULL-SCREEN PREVIEW MODAL */}
       <PreviewModal
         isOpen={isPreviewModalOpen}
         onClose={() => setIsPreviewModalOpen(false)}
         resumeData={resumeData}
         templateId={templateId}
         onSelectTemplate={(id) => setTemplateId(id)}
+      />
+
+      {/* SECTION REARRANGER & AUTO FORMAT SUGGESTIONS MODAL */}
+      <SectionRearrangerModal
+        isOpen={isRearrangerOpen}
+        onClose={() => setIsRearrangerOpen(false)}
+        sectionOrder={resumeData.sectionOrder}
+        customSections={resumeData.customSections}
+        onUpdateSectionOrder={(newOrder) => setResumeData(prev => ({ ...prev, sectionOrder: newOrder }))}
       />
 
       {/* Auxiliary Modals */}

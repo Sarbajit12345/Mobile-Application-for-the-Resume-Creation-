@@ -1,7 +1,7 @@
 import React from 'react';
-import { LayoutDashboard, FileText, PlusCircle, Layout, BarChart2, User, Settings, LogOut, Sparkles } from 'lucide-react';
+import { LayoutDashboard, FileText, PlusCircle, Layout, BarChart2, User, Settings, LogOut, Sparkles, Layers } from 'lucide-react';
 
-export default function Sidebar({ currentView, onNavigate, currentUser, onSignOut }) {
+export default function Sidebar({ currentView, onNavigate, currentUser, onSignOut, onOpenRearranger }) {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'editor', label: 'Create / Edit Resume', icon: PlusCircle },
@@ -26,7 +26,7 @@ export default function Sidebar({ currentView, onNavigate, currentUser, onSignOu
       padding: '1.5rem 1rem'
     }}>
       {/* Brand Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', padding: '0 0.5rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', padding: '0 0.5rem' }}>
         <div style={{
           width: '40px', height: '40px', borderRadius: '10px',
           background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
@@ -76,6 +76,28 @@ export default function Sidebar({ currentView, onNavigate, currentUser, onSignOu
             </button>
           );
         })}
+
+        {/* Section Rearranger Menu Button */}
+        <button
+          onClick={onOpenRearranger}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            padding: '0.75rem 0.9rem',
+            marginTop: '0.5rem',
+            borderRadius: '10px',
+            border: '1px dashed rgba(168, 85, 247, 0.4)',
+            background: 'rgba(168, 85, 247, 0.1)',
+            color: '#c084fc',
+            fontWeight: 700,
+            fontSize: '0.88rem',
+            cursor: 'pointer',
+            textAlign: 'left'
+          }}>
+          <Layers size={18} style={{ color: '#c084fc' }} />
+          Rearrange Sections
+        </button>
       </nav>
 
       {/* Bottom User Card */}
