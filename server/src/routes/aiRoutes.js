@@ -3,6 +3,17 @@ import { AIService } from "../services/aiService.js";
 
 const router = express.Router();
 
+// Custom Prompt & Sentence Correction endpoint
+router.post("/custom-prompt", async (req, res) => {
+  try {
+    const { promptText, contextData, actionType } = req.body;
+    const result = await AIService.processCustomPrompt({ promptText, contextData, actionType });
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Generate summary endpoint
 router.post("/generate-summary", async (req, res) => {
   try {

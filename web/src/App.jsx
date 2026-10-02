@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Sparkles, Download, Upload, Plus, Trash2, User, LogIn, UserPlus, Settings, BarChart2, Layout, LogOut } from 'lucide-react';
+import { FileText, Sparkles, Download, Upload, Plus, Trash2, User, LogIn, UserPlus, Settings, BarChart2, Layout, LogOut, Check } from 'lucide-react';
 import ResumePreview from './components/ResumePreview';
 import AIAssistantModal from './components/AIAssistantModal';
 import AuthModal from './components/AuthModal';
@@ -12,63 +12,177 @@ import TemplateGalleryView from './components/TemplateGalleryView';
 import DashboardOverview from './components/DashboardOverview';
 import Sidebar from './components/Sidebar';
 
+// Complete default data state matching the Sarbajit Behera target resume layout
 const initialResumeData = {
   personalDetails: {
-    fullName: 'Sarbajit Roy',
-    jobTitle: 'Senior Full Stack Engineer',
-    email: 'sarbajit@example.com',
-    phone: '+1 (555) 234-5678',
-    location: 'San Francisco, CA',
-    website: 'https://sarbajit.dev',
-    linkedin: 'linkedin.com/in/sarbajit',
-    summary: 'Experienced Full Stack Engineer specializing in modern JavaScript, React, Node.js, and cloud native architectures. Proven record of building high-performance web and mobile applications.'
+    fullName: 'SARBAJIT BEHERA',
+    designation: 'Product Manager | ERP Specialist | Business Analyst | Agile & Digital Transformation',
+    jobTitle: 'Product Manager',
+    email: 'sarbajitbehera67@gmail.com',
+    phone: '7008706674, 8908930068',
+    location: 'Bengaluru, Karnataka, India',
+    linkedin: 'https://www.linkedin.com/in/sarbajit-behera-b15948188',
+    summary: `Dynamic and results-oriented Business Analyst, Product Owner, and Product Manager (ERP) with 4+ years of experience in delivering enterprise-scale digital and ERP transformation programs. Proven expertise in end-to-end product lifecycle management, Agile delivery, stakeholder engagement, and business process optimization.
+
+Currently leading ERP initiatives as a Product Manager, owning product roadmap, backlog prioritization, and release planning while ensuring alignment with business goals and ROI. Experienced in managing and mentoring a team of 7+ Business Analysts, driving performance, standardization, and continuous improvement.
+
+Strong track record of improving project delivery speed by 30%, enhancing product quality by 20%, and achieving 15–40% operational efficiency gains through process reengineering and automation. Adept at bridging business and technology, enabling data-driven decision-making, and delivering scalable, high-impact solutions in fast-paced environments.`
   },
+  expertise: [
+    'Product Management',
+    'Business Analysis',
+    'ERP Systems',
+    'Agile Delivery',
+    'Requirements Engineering',
+    'Stakeholder Management',
+    'Backlog Prioritization',
+    'Process Optimization',
+    'Data Analysis',
+    'Digital Transformation',
+    'Team Leadership'
+  ],
+  categorizedSkills: [
+    {
+      category: 'DATA & ANALYTICS',
+      items: ['ADVANCED EXCEL', 'SQL', 'POWER BI', 'DATA ANALYSIS', 'DATA VALIDATION', 'DASHBOARDS', 'REPORTING']
+    },
+    {
+      category: 'BUSINESS ANALYSIS',
+      items: ['BRD,SRS,FRS,USER STORIES,UM, RTM', 'GAP ANALYSIS', 'IMPACT ANALYSIS', 'UAT', 'PROCESS MODELING', 'CHANGE MANAGEMENT']
+    }
+  ],
+  toolsAndTech: [
+    'JIRA', 'MS PROJECT', 'FIGMA', 'BALSAMIQ', 'AXURE', 'POSTMAN', 'DRAW.IO', 'ChatGPT', 'Gemini', 'Copilot', 'Prompt Engineering', 'AI Automation'
+  ],
+  technicalExposure: [
+    'Microservices', 'API Integration', 'API Documentation', 'AWS', 'Azure', 'IoT', 'PLC'
+  ],
+  keyAchievements: [
+    { icon: '🚀', text: '30% FASTER PROJECT DELIVERY.' },
+    { icon: '📊', text: '20% IMPROVEMENT IN PRODUCT QUALITY.' },
+    { icon: '⚙️', text: '70% REDUCTION IN MANUAL EFFORT.' },
+    { icon: '⏱️', text: '40% FASTER PROJECT TIMELINES.' },
+    { icon: '📈', text: 'UP TO 40% OPERATIONAL EFFICIENCY IMPROVEMENT.' }
+  ],
   experiences: [
     {
       id: '1',
-      company: 'Tech Solutions Inc.',
-      position: 'Senior Software Engineer',
-      startDate: '2022',
-      endDate: 'Present',
-      current: true,
-      description: '• Spearheaded architectural overhaul of high-traffic SaaS platform, boosting response times by 40%.\n• Mentored cross-functional team of 8 developers in agile practices and microservices.'
+      role: 'ASSISTANT MANAGER – BUSINESS ANALYST / PRODUCT OWNER',
+      dates: 'APRIL 2022 – PRESENT',
+      company: 'Idea Infinity IT Solutions Pvt. Ltd.',
+      keyContributions: [
+        'Led end-to-end ERP product delivery as Product Owner across modules including HRMS, FMS, SCM, MMS, DTLMS, PMS, TRM, and BI for enterprise and government clients.',
+        'Successfully delivered 4+ large-scale ERP implementations, impacting 10,000+ users with scalable and business-aligned solutions.',
+        'Managed and mentored a team of 7 Business Analysts, improving delivery quality, productivity, and adherence to BA standards.',
+        'Acted as Scrum Master, driving sprint planning, backlog grooming, and retrospectives, improving team velocity and delivery predictability.',
+        'Improved project delivery speed by 30% and product quality by 20% through Agile transformation and process optimization.',
+        'Implemented automated requirement traceability frameworks, reducing manual effort by 70% and improving audit compliance from 85% to 99%.',
+        'Conducted GAP analysis and business process reengineering, resulting in 15–40% improvement in operational efficiency.',
+        'Introduced AI-assisted requirement engineering practices, reducing project timelines by 40% and increasing stakeholder satisfaction by 25%.',
+        'Contributed to pre-sales activities (RFP/RFI responses, solutioning, effort estimation), supporting successful project acquisition.',
+        'Enhanced cross-functional collaboration between business and technical teams, ensuring alignment with strategic objectives.'
+      ],
+      keyResponsibilities: [
+        'Managed multiple projects/modules, ensuring alignment with business strategy, scope, and timelines.',
+        'Elicited, analyzed, and documented business & functional requirements (BRD, SRS, FRS, RTM, user stories).',
+        'Owned product backlog, prioritization, and release planning with stakeholders.',
+        'Defined product requirements and roadmap inputs aligned with user and business needs.',
+        'Facilitated Agile ceremonies and tracked delivery using JIRA.',
+        'Collaborated with cross-functional teams (Dev, QA, UI/UX) for seamless execution.',
+        'Led UAT, product demos, and stakeholder sign-offs.',
+        'Conducted GAP/impact analysis and managed change requests.',
+        'Monitored risks, dependencies, and performance metrics (KPIs, ROI).',
+        'Supported pre-sales activities including solutioning and effort estimation.',
+        'Mentored team members and ensured team performance, utilization, and process adherence (CMMI standards).'
+      ]
+    }
+  ],
+  projects: [
+    {
+      id: 'p1',
+      name: 'ERP (Enterprise Resource Planning System)',
+      subtitle: 'FMS, HRMS, MMS, PMS, BI',
+      points: [
+        'Owned product roadmap across FMS, HRMS, MMS, PMS, BI',
+        'Prioritized backlog based on business value & ROI',
+        'Led end-to-end product lifecycle and releases',
+        'Defined KPIs and improved data-driven decision-making'
+      ]
+    },
+    {
+      id: 'p2',
+      name: 'DTLMS (Transformer Lifecycle Management System)',
+      points: [
+        'Led requirement elicitation and workflow design',
+        'Developed AS-IS / TO-BE process models',
+        'Enabled predictive maintenance capabilities',
+        'Facilitated UAT and business validation'
+      ]
+    },
+    {
+      id: 'p3',
+      name: 'IEMS 2.0 (Excise Management System)',
+      points: [
+        'Conducted stakeholder workshops and defined workflows',
+        'Prepared BRD, SRS, and functional documents',
+        'Automated excise & revenue tracking processes',
+        'Ensured compliance and smooth rollout'
+      ]
+    },
+    {
+      id: 'p4',
+      name: 'TRM & AMI (Revenue & Metering System)',
+      points: [
+        'Defined requirements for real-time monitoring & billing',
+        'Designed dashboards for analytics and reporting',
+        'Ensured API & AMI system integration',
+        'Improved data accuracy and reliability'
+      ]
+    },
+    {
+      id: 'p5',
+      name: 'Smart Virtual Clinic (Telemedicine Platform)',
+      points: [
+        'Defined patient journey and telemedicine workflows',
+        'Created user stories for key functionalities',
+        'Collaborated with UI/UX teams',
+        'Supported deployment and adoption'
+      ]
     }
   ],
   education: [
     {
-      id: '1',
-      institution: 'University of Computer Science',
-      degree: 'Bachelor of Science',
-      fieldOfStudy: 'Computer Science & Engineering',
-      startDate: '2018',
-      endDate: '2022',
-      grade: '3.9 GPA'
-    }
-  ],
-  skills: ['React.js', 'Node.js', 'Express.js', 'TypeScript', 'PostgreSQL', 'Docker', 'REST APIs', 'Git'],
-  projects: [
+      degree: 'MASTER’S DEGREE',
+      fieldOfStudy: 'Power Electronic',
+      institution: 'GIET University, Odisha.',
+      dates: '2020 – 2022'
+    },
     {
-      id: '1',
-      name: 'AI Resume Creation Suite',
-      description: 'Full stack AI-powered resume builder supporting web, mobile, and REST backend.',
-      link: 'github.com/Sarbajit12345/Mobile-Application-for-the-Resume-Creation'
+      degree: 'BACHELOR’S DEGREE',
+      fieldOfStudy: 'Electrical Engineering',
+      institution: 'Institute of Technical Education & Research (SOA University)',
+      dates: '2016 – 2020'
     }
   ]
 };
 
 export default function App() {
   const [resumeData, setResumeData] = useState(initialResumeData);
-  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard', 'editor', 'user-mgmt', 'config', 'ats', 'templates'
+  const [currentView, setCurrentView] = useState('dashboard');
   const [activeTab, setActiveTab] = useState('personal');
-  const [templateId, setTemplateId] = useState('modern-minimal');
+  const [templateId, setTemplateId] = useState('executive-split');
   
-  // Auth state
+  // Auth & Modal States
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [dbConfig, setDbConfig] = useState(null);
-  const [newSkill, setNewSkill] = useState('');
+
+  // New item inputs
+  const [newExpertise, setNewExpertise] = useState('');
+  const [newSkillItem, setNewSkillItem] = useState('');
+  const [newTool, setNewTool] = useState('');
 
   useEffect(() => {
     fetch('http://localhost:5050/api/auth/config')
@@ -84,61 +198,14 @@ export default function App() {
     }));
   };
 
-  const handleAddExperience = () => {
-    setResumeData(prev => ({
-      ...prev,
-      experiences: [
-        ...prev.experiences,
-        { id: Date.now().toString(), company: '', position: '', startDate: '', endDate: '', current: false, description: '' }
-      ]
-    }));
+  const handleAddExpertise = () => {
+    if (!newExpertise.trim()) return;
+    setResumeData(prev => ({ ...prev, expertise: [...prev.expertise, newExpertise.trim()] }));
+    setNewExpertise('');
   };
 
-  const handleUpdateExperience = (id, field, value) => {
-    setResumeData(prev => ({
-      ...prev,
-      experiences: prev.experiences.map(exp => exp.id === id ? { ...exp, [field]: value } : exp)
-    }));
-  };
-
-  const handleRemoveExperience = (id) => {
-    setResumeData(prev => ({
-      ...prev,
-      experiences: prev.experiences.filter(exp => exp.id !== id)
-    }));
-  };
-
-  const handleAddEducation = () => {
-    setResumeData(prev => ({
-      ...prev,
-      education: [
-        ...prev.education,
-        { id: Date.now().toString(), institution: '', degree: '', fieldOfStudy: '', startDate: '', endDate: '' }
-      ]
-    }));
-  };
-
-  const handleUpdateEducation = (id, field, value) => {
-    setResumeData(prev => ({
-      ...prev,
-      education: prev.education.map(edu => edu.id === id ? { ...edu, [field]: value } : edu)
-    }));
-  };
-
-  const handleAddSkill = () => {
-    if (!newSkill.trim()) return;
-    setResumeData(prev => ({
-      ...prev,
-      skills: [...prev.skills, newSkill.trim()]
-    }));
-    setNewSkill('');
-  };
-
-  const handleRemoveSkill = (skillToRemove) => {
-    setResumeData(prev => ({
-      ...prev,
-      skills: prev.skills.filter(s => s !== skillToRemove)
-    }));
+  const handleRemoveExpertise = (idx) => {
+    setResumeData(prev => ({ ...prev, expertise: prev.expertise.filter((_, i) => i !== idx) }));
   };
 
   const handleExportJSON = () => {
@@ -194,7 +261,7 @@ export default function App() {
       ) : (
         /* Authenticated Left Sidebar Dashboard Layout */
         <div style={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
-          {/* Left Sidebar Menu */}
+          {/* Left Sidebar Navigation */}
           <Sidebar
             currentView={currentView}
             onNavigate={(view) => setCurrentView(view)}
@@ -217,7 +284,7 @@ export default function App() {
 
               <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                 <button className="btn btn-ai" onClick={() => setIsAIModalOpen(true)} style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem' }}>
-                  <Sparkles size={16} /> AI Assist
+                  <Sparkles size={16} /> Custom AI Prompt Studio
                 </button>
               </div>
             </div>
@@ -255,16 +322,19 @@ export default function App() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div className="section-tabs" style={{ borderBottom: 'none', paddingBottom: 0 }}>
                         <button className={`tab-btn ${activeTab === 'personal' ? 'active' : ''}`} onClick={() => setActiveTab('personal')}>
-                          Personal Info
+                          Header & Contact
+                        </button>
+                        <button className={`tab-btn ${activeTab === 'expertise' ? 'active' : ''}`} onClick={() => setActiveTab('expertise')}>
+                          Expertise & Skills
                         </button>
                         <button className={`tab-btn ${activeTab === 'experience' ? 'active' : ''}`} onClick={() => setActiveTab('experience')}>
-                          Experience
+                          Professional Exp
                         </button>
-                        <button className={`tab-btn ${activeTab === 'education' ? 'active' : ''}`} onClick={() => setActiveTab('education')}>
-                          Education
+                        <button className={`tab-btn ${activeTab === 'projects' ? 'active' : ''}`} onClick={() => setActiveTab('projects')}>
+                          Projects
                         </button>
-                        <button className={`tab-btn ${activeTab === 'skills' ? 'active' : ''}`} onClick={() => setActiveTab('skills')}>
-                          Skills
+                        <button className={`tab-btn ${activeTab === 'achievements' ? 'active' : ''}`} onClick={() => setActiveTab('achievements')}>
+                          Key Achievements
                         </button>
                       </div>
 
@@ -279,7 +349,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Personal Info Tab */}
+                    {/* Tab 1: Header & Contact Info */}
                     {activeTab === 'personal' && (
                       <div>
                         <div className="form-grid">
@@ -288,8 +358,8 @@ export default function App() {
                             <input value={resumeData.personalDetails.fullName} onChange={(e) => handlePersonalChange('fullName', e.target.value)} />
                           </div>
                           <div className="form-group">
-                            <label>Job Title</label>
-                            <input value={resumeData.personalDetails.jobTitle} onChange={(e) => handlePersonalChange('jobTitle', e.target.value)} />
+                            <label>Designation / Subtitle</label>
+                            <input value={resumeData.personalDetails.designation} onChange={(e) => handlePersonalChange('designation', e.target.value)} />
                           </div>
                         </div>
                         <div className="form-grid">
@@ -298,7 +368,7 @@ export default function App() {
                             <input value={resumeData.personalDetails.email} onChange={(e) => handlePersonalChange('email', e.target.value)} />
                           </div>
                           <div className="form-group">
-                            <label>Phone</label>
+                            <label>Phone Numbers</label>
                             <input value={resumeData.personalDetails.phone} onChange={(e) => handlePersonalChange('phone', e.target.value)} />
                           </div>
                         </div>
@@ -308,99 +378,134 @@ export default function App() {
                             <input value={resumeData.personalDetails.location} onChange={(e) => handlePersonalChange('location', e.target.value)} />
                           </div>
                           <div className="form-group">
-                            <label>LinkedIn</label>
+                            <label>LinkedIn URL</label>
                             <input value={resumeData.personalDetails.linkedin} onChange={(e) => handlePersonalChange('linkedin', e.target.value)} />
                           </div>
                         </div>
                         <div className="form-group">
-                          <label>Professional Summary</label>
-                          <textarea value={resumeData.personalDetails.summary} onChange={(e) => handlePersonalChange('summary', e.target.value)} />
+                          <label>Executive Summary</label>
+                          <textarea rows={6} value={resumeData.personalDetails.summary} onChange={(e) => handlePersonalChange('summary', e.target.value)} />
                         </div>
                       </div>
                     )}
 
-                    {/* Experience Tab */}
-                    {activeTab === 'experience' && (
+                    {/* Tab 2: Expertise & Skills */}
+                    {activeTab === 'expertise' && (
                       <div>
-                        {resumeData.experiences.map((exp, idx) => (
-                          <div key={exp.id} style={{ background: '#1e293b', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid rgba(255,255,255,0.08)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                              <strong style={{ color: '#a855f7' }}>Experience #{idx + 1}</strong>
-                              <button onClick={() => handleRemoveExperience(exp.id)} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}>
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
-                            <div className="form-grid">
-                              <div className="form-group">
-                                <label>Company</label>
-                                <input value={exp.company} onChange={(e) => handleUpdateExperience(exp.id, 'company', e.target.value)} />
-                              </div>
-                              <div className="form-group">
-                                <label>Position</label>
-                                <input value={exp.position} onChange={(e) => handleUpdateExperience(exp.id, 'position', e.target.value)} />
-                              </div>
-                            </div>
-                            <div className="form-grid">
-                              <div className="form-group">
-                                <label>Start Date</label>
-                                <input value={exp.startDate} onChange={(e) => handleUpdateExperience(exp.id, 'startDate', e.target.value)} />
-                              </div>
-                              <div className="form-group">
-                                <label>End Date</label>
-                                <input value={exp.endDate} onChange={(e) => handleUpdateExperience(exp.id, 'endDate', e.target.value)} />
-                              </div>
-                            </div>
-                            <div className="form-group">
-                              <label>Description / Achievements</label>
-                              <textarea value={exp.description} onChange={(e) => handleUpdateExperience(exp.id, 'description', e.target.value)} />
-                            </div>
-                          </div>
-                        ))}
-                        <button className="btn btn-secondary" onClick={handleAddExperience} style={{ width: '100%' }}>
-                          <Plus size={16} /> Add Work Experience
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Education Tab */}
-                    {activeTab === 'education' && (
-                      <div>
-                        {resumeData.education.map((edu, idx) => (
-                          <div key={edu.id} style={{ background: '#1e293b', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid rgba(255,255,255,0.08)' }}>
-                            <div className="form-grid">
-                              <div className="form-group">
-                                <label>Institution</label>
-                                <input value={edu.institution} onChange={(e) => handleUpdateEducation(edu.id, 'institution', e.target.value)} />
-                              </div>
-                              <div className="form-group">
-                                <label>Degree</label>
-                                <input value={edu.degree} onChange={(e) => handleUpdateEducation(edu.id, 'degree', e.target.value)} />
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                        <button className="btn btn-secondary" onClick={handleAddEducation} style={{ width: '100%' }}>
-                          <Plus size={16} /> Add Education
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Skills Tab */}
-                    {activeTab === 'skills' && (
-                      <div>
+                        <h4 style={{ color: '#a855f7', fontSize: '0.9rem', marginBottom: '0.75rem' }}>EXPERTISE LIST</h4>
                         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                          <input placeholder="Add a skill..." value={newSkill} onChange={(e) => setNewSkill(e.target.value)} style={{ flex: 1 }} />
-                          <button className="btn btn-primary" onClick={handleAddSkill}>
+                          <input placeholder="Add Expertise (e.g. ERP Systems)..." value={newExpertise} onChange={(e) => setNewExpertise(e.target.value)} style={{ flex: 1 }} />
+                          <button className="btn btn-primary" onClick={handleAddExpertise}>
                             <Plus size={16} /> Add
                           </button>
                         </div>
-                        <div className="skills-badge-container">
-                          {resumeData.skills.map((skill, i) => (
-                            <span key={i} className="skill-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }} onClick={() => handleRemoveSkill(skill)}>
-                              {skill} <Trash2 size={12} style={{ color: '#ef4444' }} />
+                        <div className="skills-badge-container" style={{ marginBottom: '1.5rem' }}>
+                          {resumeData.expertise.map((item, i) => (
+                            <span key={i} className="skill-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }} onClick={() => handleRemoveExpertise(i)}>
+                              {item} <Trash2 size={12} style={{ color: '#ef4444' }} />
                             </span>
                           ))}
                         </div>
+
+                        <h4 style={{ color: '#38bdf8', fontSize: '0.9rem', marginBottom: '0.75rem' }}>TOOLS & TECHNOLOGIES</h4>
+                        <div className="skills-badge-container">
+                          {resumeData.toolsAndTech.map((t, i) => (
+                            <span key={i} className="skill-badge">{t}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tab 3: Professional Experience */}
+                    {activeTab === 'experience' && (
+                      <div>
+                        {resumeData.experiences.map((exp, idx) => (
+                          <div key={exp.id || idx} style={{ background: '#1e293b', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid rgba(255,255,255,0.08)' }}>
+                            <div className="form-grid">
+                              <div className="form-group">
+                                <label>Role Title</label>
+                                <input value={exp.role} onChange={(e) => {
+                                  const updated = resumeData.experiences.map((x, i) => i === idx ? { ...x, role: e.target.value } : x);
+                                  setResumeData(prev => ({ ...prev, experiences: updated }));
+                                }} />
+                              </div>
+                              <div className="form-group">
+                                <label>Dates (e.g. APRIL 2022 – PRESENT)</label>
+                                <input value={exp.dates} onChange={(e) => {
+                                  const updated = resumeData.experiences.map((x, i) => i === idx ? { ...x, dates: e.target.value } : x);
+                                  setResumeData(prev => ({ ...prev, experiences: updated }));
+                                }} />
+                              </div>
+                            </div>
+                            <div className="form-group">
+                              <label>Company Name</label>
+                              <input value={exp.company} onChange={(e) => {
+                                const updated = resumeData.experiences.map((x, i) => i === idx ? { ...x, company: e.target.value } : x);
+                                setResumeData(prev => ({ ...prev, experiences: updated }));
+                              }} />
+                            </div>
+                            <div className="form-group">
+                              <label>Key Contributions (One bullet per line)</label>
+                              <textarea rows={6} value={exp.keyContributions?.join('\n')} onChange={(e) => {
+                                const lines = e.target.value.split('\n');
+                                const updated = resumeData.experiences.map((x, i) => i === idx ? { ...x, keyContributions: lines } : x);
+                                setResumeData(prev => ({ ...prev, experiences: updated }));
+                              }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Tab 4: Projects */}
+                    {activeTab === 'projects' && (
+                      <div>
+                        {resumeData.projects.map((proj, idx) => (
+                          <div key={proj.id || idx} style={{ background: '#1e293b', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid rgba(255,255,255,0.08)' }}>
+                            <div className="form-grid">
+                              <div className="form-group">
+                                <label>Project Name</label>
+                                <input value={proj.name} onChange={(e) => {
+                                  const updated = resumeData.projects.map((p, i) => i === idx ? { ...p, name: e.target.value } : p);
+                                  setResumeData(prev => ({ ...prev, projects: updated }));
+                                }} />
+                              </div>
+                              <div className="form-group">
+                                <label>Subtitle / Modules</label>
+                                <input value={proj.subtitle || ''} onChange={(e) => {
+                                  const updated = resumeData.projects.map((p, i) => i === idx ? { ...p, subtitle: e.target.value } : p);
+                                  setResumeData(prev => ({ ...prev, projects: updated }));
+                                }} />
+                              </div>
+                            </div>
+                            <div className="form-group">
+                              <label>Project Bullet Points (One per line)</label>
+                              <textarea rows={4} value={proj.points?.join('\n')} onChange={(e) => {
+                                const lines = e.target.value.split('\n');
+                                const updated = resumeData.projects.map((p, i) => i === idx ? { ...p, points: lines } : p);
+                                setResumeData(prev => ({ ...prev, projects: updated }));
+                              }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Tab 5: Key Achievements */}
+                    {activeTab === 'achievements' && (
+                      <div>
+                        {resumeData.keyAchievements.map((ach, idx) => (
+                          <div key={idx} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                            <input style={{ width: '60px', textAlign: 'center' }} value={ach.icon} onChange={(e) => {
+                              const updated = resumeData.keyAchievements.map((a, i) => i === idx ? { ...a, icon: e.target.value } : a);
+                              setResumeData(prev => ({ ...prev, keyAchievements: updated }));
+                            }} />
+                            <input style={{ flex: 1 }} value={ach.text} onChange={(e) => {
+                              const updated = resumeData.keyAchievements.map((a, i) => i === idx ? { ...a, text: e.target.value } : a);
+                              setResumeData(prev => ({ ...prev, keyAchievements: updated }));
+                            }} />
+                          </div>
+                        ))}
                       </div>
                     )}
                   </section>
@@ -408,9 +513,9 @@ export default function App() {
                   {/* Live Preview Panel */}
                   <section className="preview-panel">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                      <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 600 }}>LIVE PREVIEW</span>
+                      <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 600 }}>LIVE PREVIEW (Target Sarbajit Behera Layout)</span>
                       <button className="btn btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => window.print()}>
-                        <Download size={14} /> Print PDF
+                        <Download size={14} /> Download PDF
                       </button>
                     </div>
                     <ResumePreview resumeData={resumeData} templateId={templateId} />
@@ -426,13 +531,13 @@ export default function App() {
       <RegisterModal
         isOpen={isRegisterModalOpen}
         onClose={() => setIsRegisterModalOpen(false)}
-        onRegisterSuccess={(user) => { setCurrentUser(user); setCurrentView('dashboard'); }}
+        onRegisterSuccess={(user) => { setCurrentUser(user); setCurrentView('editor'); }}
       />
 
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
-        onAuthSuccess={(user) => { setCurrentUser(user); setCurrentView('dashboard'); }}
+        onAuthSuccess={(user) => { setCurrentUser(user); setCurrentView('editor'); }}
         dbConfig={dbConfig}
       />
 
@@ -443,8 +548,15 @@ export default function App() {
         onApplySummary={(sum) => handlePersonalChange('summary', sum)}
         onApplyBullets={(bullets) => {
           if (resumeData.experiences.length > 0) {
-            handleUpdateExperience(resumeData.experiences[0].id, 'description', bullets);
+            const lines = bullets.split('\n').filter(l => l.trim().length > 0);
+            setResumeData(prev => ({
+              ...prev,
+              experiences: prev.experiences.map((exp, i) => i === 0 ? { ...exp, keyContributions: lines } : exp)
+            }));
           }
+        }}
+        onApplyCustomText={(text) => {
+          if (activeTab === 'personal') handlePersonalChange('summary', text);
         }}
       />
     </div>
