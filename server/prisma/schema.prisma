@@ -1,0 +1,93 @@
+// Prisma Database Schema for AI Resume Builder
+datasource db {
+  provider = "sqlite" // Can be switched to postgresql or mongodb
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  resumes   Resume[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Resume {
+  id           String           @id @default(uuid())
+  userId       String?
+  user         User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title        String           @default("Untitled Resume")
+  templateId   String           @default("modern-minimal")
+  fullName     String?
+  email        String?
+  phone        String?
+  location     String?
+  website      String?
+  github       String?
+  linkedin     String?
+  summary      String?
+  skills       String?          // JSON array string
+  experiences  WorkExperience[]
+  education    Education[]
+  projects     Project[]
+  certifications Certification[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+model WorkExperience {
+  id          String   @id @default(uuid())
+  resumeId    String
+  resume      Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  company     String
+  position    String
+  startDate   String?
+  endDate     String?
+  current     Boolean  @default(false)
+  description String?
+}
+
+model Education {
+  id           String   @id @default(uuid())
+  resumeId     String
+  resume       Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  institution  String
+  degree       String
+  fieldOfStudy String?
+  startDate    String?
+  endDate      String?
+  grade        String?
+}
+
+model Project {
+  id           String   @id @default(uuid())
+  resumeId     String
+  resume       Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  name         String
+  description  String?
+  link         String?
+  technologies String?
+}
+
+model Certification {
+  id       String  @id @default(uuid())
+  resumeId String
+  resume   Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  name     String
+  issuer   String?
+  date     String?
+}
+
+model AILog {
+  id           String   @id @default(uuid())
+  resumeId     String?
+  actionType   String   // SUMMARY_GENERATE, BULLET_ENHANCE, ATS_ANALYSIS
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+  createdAt    DateTime @default(now())
+}
